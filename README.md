@@ -15,6 +15,20 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
+## Narrator (scratch VO)
+
+Generated through fal.ai with ElevenLabs multilingual v2, voice **Brian** (deep, calm American read), at 1.1x speed.
+Needs `FAL_KEY` in the environment.
+
+```bash
+python3 scripts/generate_vo.py                # regenerate all 11 lines
+python3 scripts/generate_vo.py --only 5 7     # just some shots
+python3 scripts/generate_vo.py --voice Bill   # try another voice
+python3 scripts/generate_vo.py --audition     # same line in 6 voices -> public/audio/vo/auditions/
+```
+
+Line start times live in `src/timeline.ts` (`voAt`). Shots were retimed from the storyboard so the VO fits (see the comments there).
+
 ## Layout
 
 | Path | What |

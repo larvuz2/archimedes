@@ -15,7 +15,9 @@
 - [ ] Pier footage (shot 3): generic, unmarked patrol crew and boat
 - [ ] Night go-fast plate or CG (shots 2, 7)
 - [ ] Music track (library or custom), SFX (engine, water, gulls, cranes, UI tones)
-- [ ] VO talent (scratch TTS first for timing)
+- [x] Scratch VO for timing: fal.ai / ElevenLabs "Brian" (`public/audio/vo/`)
+- [ ] Final VO: real talent, or confirm the AI voice's commercial license (ElevenLabs via fal) and that Archimedes is fine with a synthetic narrator
+- [ ] Archimedes OK with retimed shots (Act 1 is 17.5s instead of 14s so the approved copy fits)
 - [ ] Source for "Over 80% of global trade by volume moves by sea" (UNCTAD Review of Maritime Transport — confirm edition)
 
 ## Compliance guardrails (from storyboard)
