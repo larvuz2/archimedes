@@ -26,7 +26,11 @@ npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 | `public/assets/` | Logo, footage, 3D models (`.glb`), HDRIs. |
 | `public/audio/` | VO, music, SFX. |
 | `public/fonts/` | Bundled fonts (renders never hit the network). |
-| `docs/` | Creative approach, asset checklist, storyboard reference. |
+| `public/storyboard/` | The 11 storyboard sketches (shown in the animatic). |
+| `docs/storyboard-frames.md` | Composition notes for every sketch: framing, colors, labels, what must carry into production. |
+| `docs/reference/` | Storyboard PDF, extracted frames, contact sheet. |
+| `scripts/` | `extract_storyboard_frames.py` pulls the sketches out of the PDF. |
+| `docs/` | Creative approach, asset checklist. |
 
 ## Render notes
 
