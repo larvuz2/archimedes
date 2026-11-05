@@ -34,7 +34,7 @@ SFX: engine spool, score lifts.
 
 **4 · Beat 1: GET THERE (0:17–0:27)**
 Tracking shot: Marlin flying level over chop and closing on the contact. Speed readout climbs. Map inset shows the gap shrinking.
-VO: *"One: it gets there first. Flying on foils above the chop, at up to 150 knots."*
+VO: *"One: it gets there first. Flying on foils at up to 150 knots."*
 On screen: `01 · GET THERE` · `UP TO 150 KT*`
 Optional proof point from the website: `1,000 NM MISSION · 29 HRS → 10 HRS*`
 Footnote: `*Design target`

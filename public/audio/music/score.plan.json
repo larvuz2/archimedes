@@ -1,0 +1,117 @@
+{
+ "positive_global_styles": [
+  "cinematic hybrid orchestral trailer score",
+  "modern defense-technology commercial",
+  "pulsing analog synth bass",
+  "taut string ostinato",
+  "deep cinematic percussion",
+  "heroic but restrained",
+  "clean modern mix",
+  "instrumental",
+  "120 bpm"
+ ],
+ "negative_global_styles": [
+  "vocals",
+  "choir lyrics",
+  "rap",
+  "EDM drop",
+  "dubstep",
+  "cheesy",
+  "lo-fi",
+  "jazz"
+ ],
+ "sections": [
+  {
+   "section_name": "Tension",
+   "duration_ms": 14400,
+   "lines": [],
+   "positive_local_styles": [
+    "dark low synth pulse",
+    "sparse",
+    "clock-like ticking percussion building",
+    "uneasy suspended strings",
+    "ends on an abrupt hard stop"
+   ],
+   "negative_local_styles": [
+    "big drums",
+    "melody",
+    "major key"
+   ]
+  },
+  {
+   "section_name": "Hush",
+   "duration_ms": 4200,
+   "lines": [],
+   "positive_local_styles": [
+    "near silence",
+    "single soft sustained low drone",
+    "one gentle reverse swell at the very end"
+   ],
+   "negative_local_styles": [
+    "drums",
+    "percussion",
+    "ticking",
+    "loud"
+   ]
+  },
+  {
+   "section_name": "Lift",
+   "duration_ms": 17800,
+   "lines": [],
+   "positive_local_styles": [
+    "uplifting major key",
+    "confident rising string ostinato",
+    "driving pulse",
+    "building energy and optimism",
+    "warm brass swells",
+    "momentum"
+   ],
+   "negative_local_styles": [
+    "dark",
+    "horror"
+   ]
+  },
+  {
+   "section_name": "Full",
+   "duration_ms": 10000,
+   "lines": [],
+   "positive_local_styles": [
+    "full epic orchestra",
+    "big cinematic drums",
+    "heroic brass theme",
+    "high intensity but controlled",
+    "propulsive"
+   ],
+   "negative_local_styles": [
+    "chaotic",
+    "aggressive distortion"
+   ]
+  },
+  {
+   "section_name": "Recap hits",
+   "duration_ms": 9000,
+   "lines": [],
+   "positive_local_styles": [
+    "three huge orchestral hits spaced about one second apart",
+    "sustained heroic chord after the hits",
+    "triumphant"
+   ],
+   "negative_local_styles": [
+    "busy rhythm"
+   ]
+  },
+  {
+   "section_name": "Resolve",
+   "duration_ms": 4600,
+   "lines": [],
+   "positive_local_styles": [
+    "warm resolving final chord",
+    "one last big hit then a long reverb tail",
+    "confident ending"
+   ],
+   "negative_local_styles": [
+    "fade into new theme"
+   ]
+  }
+ ]
+}

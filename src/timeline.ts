@@ -1,69 +1,85 @@
-// Shot timing (seconds). Edit here only.
-// Retimed from Storyboard V3 so the VO fits: Act 1 runs 0-17.5s (was 0-14s), the missions
-// give back the time; Act 3 is unchanged. Original times are in the comment on each shot.
+// Script v2 edit (seconds). Single source of truth for picture, VO and supers.
+// VO lines + direction live in src/vo.json; audio in public/audio/vo/<id>.mp3.
+
+export type Move = 'pushIn' | 'pullOut' | 'panLeft' | 'panRight' | 'rise' | 'still';
+
+export type Super = {
+  text: string;
+  at: number; // seconds from the top
+  until?: number; // defaults to shot end
+  style: 'beat' | 'spec' | 'footnote' | 'label' | 'lock' | 'recap';
+  x?: number; // % of width (lock box / labels)
+  y?: number;
+};
+
 export type Shot = {
-  id: number;
-  name: string;
+  id: string;
   act: 1 | 2 | 3;
+  name: string;
   start: number;
   end: number;
-  /** When the VO line starts, in seconds from the top (may lead the cut slightly). */
-  voAt: number;
-  vo: string;
-  onScreen: string;
+  image?: string; // public/frames/<id>.jpg
+  move: Move;
+  supers?: Super[];
   sound: string;
-  /** Storyboard sketch in public/storyboard (composition reference). */
-  sketch: string;
 };
 
 export const SHOTS: Shot[] = [
-  {id: 1, sketch: 'storyboard/shot-01.png', act: 1, name: 'Wide aerial, slow push', start: 0, end: 5, voAt: 0.5, // storyboard V3: 0-5s
-    vo: "Every day, America's ports carry the cargo our economy and our military depend on.",
-    onScreen: 'Over 80% of global trade by volume moves by sea. (Source: UNCTAD)',
-    sound: 'Gulls, distant crane horns. Low synth pulse fades in.'},
-  {id: 2, sketch: 'storyboard/shot-02.png', act: 1, name: 'Console insert, then water', start: 5, end: 11.5, voAt: 4.9, // storyboard V3: 5-10s
-    vo: 'The threats are small, fast, and often dark: hostile craft in the harbor, smugglers on the approaches.',
-    onScreen: 'NO AIS · INBOUND · NO AIS',
-    sound: 'Console beep; outboard whine passes left to right.'},
-  {id: 3, sketch: 'storyboard/shot-03.png', act: 1, name: 'Pier, clock overlay', start: 11.5, end: 17.5, voAt: 11.7, // storyboard V3: 10-14s
-    vo: "Conventional patrols take time to respond, and rough water slows them further. Threats don't wait.",
-    onScreen: '(none — clock carries it)',
-    sound: 'Ticking builds, then cuts to silence on the last frame.'},
-  {id: 4, sketch: 'storyboard/shot-04.png', act: 2, name: 'Low-angle reveal', start: 17.5, end: 21.5, voAt: 19.2, // storyboard V3: 14-18s
-    vo: 'Archimedes Freight presents Marlin.',
-    onScreen: 'ARCHIMEDES logo · MARLIN',
-    sound: 'Engine spools up; score lifts on the cut.'},
-  {id: 5, sketch: 'storyboard/shot-05.png', act: 2, name: 'Tracking shot + reach map', start: 21.5, end: 28.5, voAt: 21.4, // storyboard V3: 18-24s
-    vo: 'Under 24 feet. Flying on foils at up to 150 knots. Harbor to approaches in minutes, even through open-water chop.',
-    onScreen: 'HYDROFOIL · <24 FT · UP TO 150 KT* · HIGH-SPEED OPS TO SEA STATE 3*  (*Design target)',
-    sound: 'Full engine roar, wind buffet on the mic.'},
-  {id: 6, sketch: 'storyboard/shot-06.png', act: 2, name: 'Mission 1: harbor', start: 28.5, end: 34.5, voAt: 29.4, // storyboard V3: 24-32s
-    vo: 'In the harbor, its sensors find what fixed cameras miss, and put eyes on it fast.',
-    onScreen: 'MISSION 1 · PORT SECURITY',
-    sound: 'Engine ducks under soft UI tones; one lock-on chime.'},
-  {id: 7, sketch: 'storyboard/shot-07.png', act: 2, name: 'Mission 2: counter-drug', start: 34.5, end: 41, voAt: 34.9, // storyboard V3: 32-41s
-    vo: 'Offshore, it flies over the chop that slows smugglers down, and shadows them until a boarding team arrives.',
-    onScreen: 'MISSION 2 · COUNTER-DRUG',
-    sound: 'Wind, hull slap from the go-fast, distant radio chatter (unintelligible).'},
-  {id: 8, sketch: 'storyboard/shot-08.png', act: 2, name: 'Split-screen payoff', start: 41, end: 45, voAt: 41.2, // storyboard V3: 41-45s
-    vo: 'Detect. Close. Identify. Hand off.',
-    onScreen: 'DETECT · CLOSE · IDENTIFY · HAND OFF',
-    sound: 'Four hits in the score land on the four words.'},
-  {id: 9, sketch: 'storyboard/shot-09.png', act: 3, name: 'Animated map pull-back', start: 45, end: 51, voAt: 45.6, // storyboard V3: 45-51s
-    vo: 'As a networked picket, Marlin extends the reach of every partner, from pier to approach.',
-    onScreen: 'PORT OPS · PARTNERS',
-    sound: 'Score broadens and resolves; engine fades out.'},
-  {id: 10, sketch: 'storyboard/shot-10.png', act: 3, name: 'Callback to shot 1', start: 51, end: 56, voAt: 51.6, // storyboard V3: 51-56s
-    vo: 'Ports stay open. Cargo keeps moving. Contraband stays out.',
-    onScreen: '(none)',
-    sound: 'Port ambience from shot 1 returns under the score.'},
-  {id: 11, sketch: 'storyboard/shot-11.png', act: 3, name: 'End card', start: 56, end: 60, voAt: 56.6, // storyboard V3: 56-60s
-    vo: 'Marlin. Speed is security.',
-    onScreen: 'ARCHIMEDES · MARLIN · Speed is security. · Gregg Scheiferstein, CEO · gscheiferstein@archimedesfreight.com · [disclaimer]',
-    sound: 'Final score hit, then a single engine rev to black.'},
+  {id: 'f01', act: 1, name: 'Night sea', start: 0, end: 4, image: 'frames/f01.jpg', move: 'pushIn',
+    sound: 'Wind, distant outboard whine, low synth pulse.'},
+  {id: 'f02', act: 1, name: 'Operations center', start: 4, end: 7, image: 'frames/f02.jpg', move: 'pushIn',
+    sound: 'Console beep.'},
+  {id: 'f03', act: 1, name: 'Patrol at the pier', start: 7, end: 10.6, image: 'frames/f03.jpg', move: 'panRight',
+    sound: 'Footsteps on planks, ticking starts.'},
+  {id: 'f04', act: 1, name: 'Patrol in heavy chop', start: 10.6, end: 14.4, image: 'frames/f04.jpg', move: 'pullOut',
+    sound: 'Hull slam, ticking builds, hard cut to silence.'},
+  {id: 'f05', act: 2, name: 'Marlin wakes', start: 14.4, end: 18.6, image: 'frames/f05.jpg', move: 'pushIn',
+    sound: 'Silence, beacons click on, fan spools up. Music almost gone under VO.'},
+  {id: 'f06', act: 2, name: 'Marlin rises (title)', start: 18.6, end: 22.2, image: 'frames/f06.jpg', move: 'rise',
+    supers: [{text: 'MARLIN', at: 18.9, style: 'beat'}],
+    sound: 'Fan roar, spray. Music lifts right after "Marlin".'},
+  {id: 'f07', act: 2, name: '01 Get there', start: 22.2, end: 28.4, image: 'frames/f07.jpg', move: 'panRight',
+    supers: [
+      {text: '01 · GET THERE', at: 22.4, style: 'label'},
+      {text: 'UP TO 150 KT*', at: 25.2, style: 'spec'},
+      {text: '*Design target', at: 25.2, style: 'footnote'},
+    ],
+    sound: 'Full fan roar, wind buffet.'},
+  {id: 'f08', act: 2, name: '02 See it', start: 28.4, end: 36.4, image: 'frames/f08.jpg', move: 'still', // still so the lock box stays on the boat
+    supers: [
+      {text: '02 · SEE IT', at: 28.6, style: 'label'},
+      {text: 'SUSPECT VESSEL · IDENTIFIED', at: 31.5, style: 'lock', x: 80, y: 32.5},
+    ],
+    sound: 'Soft UI tones, one lock-on chime.'},
+  {id: 'f09', act: 2, name: '03 Stay on it', start: 36.4, end: 41.8, image: 'frames/f09.jpg', move: 'panRight',
+    supers: [{text: '03 · STAY ON IT', at: 36.6, style: 'label'}],
+    sound: 'Hull slap, wind, beacon pulse.'},
+  {id: 'f10', act: 2, name: 'Partner cutter closing', start: 41.8, end: 46.4, image: 'frames/f10.jpg', move: 'pullOut',
+    supers: [{text: 'TRACK SHARED → PARTNER', at: 42.2, style: 'label'}],
+    sound: 'Unintelligible radio chatter, cutter engines.'},
+  {id: 'f11', act: 3, name: 'Recap', start: 46.4, end: 52.6, image: 'frames/f11.jpg', move: 'pushIn',
+    supers: [{text: 'GET THERE · SEE IT · STAY ON IT', at: 47.0, style: 'recap'}],
+    sound: 'Three score hits on the three beats.'},
+  {id: 'f12', act: 3, name: 'Hero beauty shot', start: 52.6, end: 55.4, image: 'frames/f12.jpg', move: 'panLeft',
+    sound: 'Score sustains.'},
+  {id: 'end', act: 3, name: 'End card', start: 55.4, end: 60, move: 'still',
+    sound: 'Final hit, tail to black.'},
 ];
 
-export const DISCLAIMER =
-  '[PLACEHOLDER — agreed concept-visualization disclaimer from Archimedes] Concept visualization. Performance figures are design targets, not demonstrated performance.';
+// When each VO line starts (seconds). Durations come from the audio files.
+export const VO_AT: Record<string, number> = {
+  vo1: 0.8, vo2: 5.6, vo3: 15.5, vo4: 22.3, vo5: 28.8, vo6: 36.7, vo7: 47.0, vo8: 55.6,
+};
 
+// Measured lengths of the current VO takes (s), used for music ducking.
+export const VO_LEN: Record<string, number> = {
+  vo1: 4.23, vo2: 8.7, vo3: 2.98, vo4: 5.98, vo5: 6.87, vo6: 8.41, vo7: 2.95, vo8: 2.56,
+};
+
+export const CONTACT = {name: 'Gregg Scheiferstein, CEO', email: 'gscheiferstein@archimedesfreight.com'};
+
+export const DISCLAIMER =
+  '[PLACEHOLDER: agreed concept-visualization disclaimer] Concept visualization. Performance figures are design targets, not demonstrated performance.';
+
+export const VERSION = 'ANIMATIC v1.0';
 export const TOTAL_SECONDS = 60;

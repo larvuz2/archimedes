@@ -15,19 +15,26 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
-## Narrator (scratch VO)
+## Animatic v1.0 (script v2)
 
-Generated through fal.ai with ElevenLabs multilingual v2, voice **Brian** (deep, calm American read), at 1.1x speed.
-Needs `FAL_KEY` in the environment.
+Review file: `review/marlin-animatic-v1.0.mp4` (1080p, 60s, with "ANIMATIC v1.0" slate). Remove the slate for
+finals with `<Marlin slate={false} />`.
+
+All generation runs through fal.ai (needs `FAL_KEY`):
 
 ```bash
-python3 scripts/generate_vo.py                # regenerate all 11 lines
-python3 scripts/generate_vo.py --only 5 7     # just some shots
-python3 scripts/generate_vo.py --voice Bill   # try another voice
-python3 scripts/generate_vo.py --audition     # same line in 6 voices -> public/audio/vo/auditions/
+python3 scripts/generate_vo.py        # narrator: ElevenLabs v3, voice Brian, lines + direction in src/vo.json
+python3 scripts/generate_music.py     # score: ElevenLabs Music, section plan locked to the edit
+python3 scripts/generate_frames.py    # storyboard frames: GPT Image 2.5 (openai/gpt-image-2.5/flare/edit)
+python3 scripts/generate_frames.py --only f07   # redo one frame
 ```
 
-Line start times live in `src/timeline.ts` (`voAt`). Shots were retimed from the storyboard so the VO fits (see the comments there).
+- **Frames** share one cinematography block and one product description; the Marlin reference sheet
+  (`public/assets/models/marlin-reference-sheet.jpg`) is attached to every generation, plus earlier frames
+  where boats must match (`CONTINUITY`). Exact prompts: `docs/frames/prompts/`.
+- **Music level** is automated in `src/audio.ts`: ducked under VO, almost gone under
+  "Archimedes Freight presents... Marlin", then swells to full right after "Marlin".
+- **Timing**: `src/timeline.ts` (shots, supers, VO start times).
 
 ## Layout
 
@@ -35,8 +42,9 @@ Line start times live in `src/timeline.ts` (`voAt`). Shots were retimed from the
 |---|---|
 | `src/timeline.ts` | Shot list, timings, VO, on-screen text, sound notes (from Storyboard V3). Single source of truth. |
 | `src/theme.ts` | Colors / fonts / format. Replace with the Archimedes brand guide when we have it. |
-| `src/Marlin.tsx` | Master edit. Each shot is a `<Sequence>`; currently placeholder animatic cards. |
-| `src/shots/` | One component per shot as they're built. `ThreeSmokeTest` proves 3D renders. |
+| `src/Marlin.tsx` | Master edit: frames, supers, end card, music + VO, slate. |
+| `src/components/` | FrameShot (camera moves), Supers, EndCard, AnimaticSlate. |
+| `public/frames/` | GPT Image 2.5 storyboard frames f01–f12. |
 | `public/assets/` | Logo, footage, 3D models (`.glb`), HDRIs. |
 | `public/audio/` | VO, music, SFX. |
 | `public/fonts/` | Bundled fonts (renders never hit the network). |

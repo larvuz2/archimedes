@@ -1,0 +1,15 @@
+{
+  "voice": "Brian",
+  "model": "eleven-v3",
+  "note": "Script v2. 'direction' is an ElevenLabs v3 audio tag prepended to the line; 'say' overrides spelling for pronunciation.",
+  "lines": [
+    {"id": "vo1", "text": "Every night, small, fast boats run dark toward our coast.", "direction": "[serious, low]"},
+    {"id": "vo2", "text": "Conventional patrols take time to launch, and rough water slows them down. By the time they arrive, the target is gone.", "direction": "[serious]", "say": "Conventional patrols take time to launch... and rough water slows them down. By the time they arrive... the target is gone."},
+    {"id": "vo3", "text": "Archimedes Freight presents Marlin.", "direction": "[dramatic, grand]", "say": "Archimedes Freight presents... Marlin."},
+    {"id": "vo4", "text": "One: it gets there first. Flying on foils at up to 150 knots.", "direction": "[confident, building]", "say": "One. It gets there first. Flying on foils at up to one hundred fifty knots."},
+    {"id": "vo5", "text": "Two: it sees the threat. Its sensors scan and identify the vessel from a safe distance.", "direction": "[confident]", "say": "Two. It sees the threat. Its sensors scan and identify the vessel... from a safe distance."},
+    {"id": "vo6", "text": "Three: it stays on target. Marlin holds the track and streams a live picture to responders, until they make the stop.", "direction": "[confident, intense]", "say": "Three. It stays on target. Marlin holds the track, and streams a live picture to responders... until they make the stop."},
+    {"id": "vo7", "text": "Get there. See it. Stay on it.", "direction": "[epic, measured]"},
+    {"id": "vo8", "text": "Marlin. Speed is security.", "direction": "[grand, warm]", "say": "Marlin. ... Speed is security."}
+  ]
+}
