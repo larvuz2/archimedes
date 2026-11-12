@@ -1,7 +1,7 @@
 // Script v2 edit (seconds). Single source of truth for picture, VO and supers.
 // VO lines + direction live in src/vo.json; audio in public/audio/vo/<id>.mp3.
 
-export type Move = 'pushIn' | 'pullOut' | 'panLeft' | 'panRight' | 'rise' | 'still';
+export type Move = 'pushIn' | 'pullOut' | 'panLeft' | 'panRight' | 'rise' | 'still' | 'shake';
 
 export type Super = {
   text: string;

@@ -19,6 +19,11 @@ export const FrameShot: React.FC<{src: string; move: Move; fadeIn?: number}> = (
     case 'panLeft': scale = 1.12; x = lerp(-2.5, 2.5); break;
     case 'rise': scale = lerp(1.08, 1.13); y = lerp(2.5, -2); break;
     case 'still': scale = 1.04; break;
+    case 'shake': // tight, moving with the boat
+      scale = lerp(1.1, 1.16);
+      x = Math.sin(frame * 0.9) * 0.35 + Math.sin(frame * 2.3) * 0.2;
+      y = Math.cos(frame * 1.1) * 0.45 + Math.sin(frame * 3.1) * 0.15;
+      break;
   }
   const opacity = fadeIn ? interpolate(frame, [0, fadeIn], [0, 1], {extrapolateRight: 'clamp'}) : 1;
 

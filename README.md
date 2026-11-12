@@ -15,6 +15,16 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
+## Animatic v2.0 (client Storyboard V5): current
+
+Review file: `review/marlin-animatic-v2.0.mp4`. Code: `src/v2/` (composition `Marlin`; v1 kept as `MarlinV1`).
+Fix-by-fix log: `docs/v2-client-fixes.md`. Render + master audio: `npm run master`.
+
+- Frames: `python3 scripts/generate_frames.py` (now V5: gray Marlin, one continuous night) → `public/frames/v2/`
+- Gray product reference: `python3 scripts/make_gray_reference.py`
+- SFX: `python3 scripts/generate_sfx.py` · Score: `python3 scripts/generate_music.py` and `--act2`
+- Tactical display (COP), radar and IR overlays are code: `src/v2/COP.tsx`, `Radar.tsx`, `IRView.tsx`, geometry in `geo.ts`
+
 ## Animatic v1.0 (script v2)
 
 Review file: `review/marlin-animatic-v1.0.mp4` (1080p, 60s, with "ANIMATIC v1.0" slate). Remove the slate for

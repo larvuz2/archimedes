@@ -1,0 +1,143 @@
+{
+ "positive_global_styles": [
+  "tense modern cinematic score",
+  "hybrid electronic and orchestral",
+  "pulsing analog synth bass",
+  "taut string ostinato",
+  "deep cinematic percussion",
+  "serious, professional, confident",
+  "clean modern mix",
+  "instrumental",
+  "120 bpm"
+ ],
+ "negative_global_styles": [
+  "vocals",
+  "choir",
+  "lyrics",
+  "rap",
+  "EDM drop",
+  "dubstep",
+  "cheesy",
+  "lo-fi",
+  "jazz"
+ ],
+ "sections": [
+  {
+   "section_name": "Hard pulse",
+   "duration_ms": 10000,
+   "lines": [],
+   "positive_local_styles": [
+    "hard urgent pulse from the first frame",
+    "driving low synth bass",
+    "tightening",
+    "emergency"
+   ],
+   "negative_local_styles": [
+    "melody",
+    "major key"
+   ]
+  },
+  {
+   "section_name": "Sinking",
+   "duration_ms": 6000,
+   "lines": [],
+   "positive_local_styles": [
+    "sinking feeling",
+    "descending",
+    "thinning out",
+    "drops to complete silence at the end"
+   ],
+   "negative_local_styles": [
+    "drums",
+    "major key"
+   ]
+  },
+  {
+   "section_name": "Held tone",
+   "duration_ms": 4000,
+   "lines": [],
+   "positive_local_styles": [
+    "one single held soft synth tone in near silence",
+    "still",
+    "hopeful"
+   ],
+   "negative_local_styles": [
+    "drums",
+    "percussion",
+    "rhythm"
+   ]
+  },
+  {
+   "section_name": "Pulse returns",
+   "duration_ms": 3400,
+   "lines": [],
+   "positive_local_styles": [
+    "quiet pulse returns underneath",
+    "anticipation",
+    "rising"
+   ],
+   "negative_local_styles": [
+    "loud",
+    "big drums"
+   ]
+  },
+  {
+   "section_name": "Kick in",
+   "duration_ms": 16600,
+   "lines": [],
+   "positive_local_styles": [
+    "score kicks in hard on the first beat",
+    "driving",
+    "confident",
+    "propulsive",
+    "big cinematic drums",
+    "rising strings",
+    "speed you can feel"
+   ],
+   "negative_local_styles": [
+    "dark horror",
+    "chaotic"
+   ]
+  },
+  {
+   "section_name": "Steady watch",
+   "duration_ms": 6000,
+   "lines": [],
+   "positive_local_styles": [
+    "steady",
+    "disciplined",
+    "sustained tension under control",
+    "lighter drums"
+   ],
+   "negative_local_styles": [
+    "big hits"
+   ]
+  },
+  {
+   "section_name": "Broaden and resolve",
+   "duration_ms": 10000,
+   "lines": [],
+   "positive_local_styles": [
+    "score broadens",
+    "warm resolving",
+    "relief",
+    "three big orchestral hits near the end, one second apart"
+   ],
+   "negative_local_styles": [
+    "dark"
+   ]
+  },
+  {
+   "section_name": "Out",
+   "duration_ms": 4000,
+   "lines": [],
+   "positive_local_styles": [
+    "final sustained chord fading to silence"
+   ],
+   "negative_local_styles": [
+    "new theme",
+    "drums"
+   ]
+  }
+ ]
+}

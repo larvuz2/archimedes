@@ -2,63 +2,58 @@
 
 Every frame = the SAME cinematography block + the SAME product description + that shot's
 composition. The Marlin reference sheet is attached to every generation.
-Writes public/frames/<id>.jpg and docs/frames/prompts/<id>.txt (the exact prompt used).
+Storyboard V5 (client v2): one continuous night, defense-gray Marlin.
+Writes public/frames/v2/<id>.jpg and docs/frames/v2/prompts/<id>.txt (the exact prompt used).
+Frames listed in CONTINUITY need their reference frames generated first.
 
   python3 scripts/generate_frames.py            # all frames
-  python3 scripts/generate_frames.py --only f06 f07
+  python3 scripts/generate_frames.py --only a06 a07
 """
 import argparse, base64, json, os, pathlib, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-REF = ROOT / 'public/assets/models/marlin-reference-sheet.jpg'
-OUT = ROOT / 'public/frames'
-PROMPTS = ROOT / 'docs/frames/prompts'
+# Storyboard V5: defense-gray Marlin (made by scripts/make_gray_reference.py from the client sheet)
+REF = ROOT / 'public/assets/models/marlin-reference-sheet-gray.jpg'
+OUT = ROOT / 'public/frames/v2'
+PROMPTS = ROOT / 'docs/frames/v2/prompts'
 ENDPOINT = 'https://fal.run/openai/gpt-image-2.5/flare/edit'
 
 CINEMATOGRAPHY = """CINEMATOGRAPHY — apply identically to every frame of this film:
-Photoreal cinematic film still from a premium defense-technology commercial. Shot on ARRI Alexa 65 with Panavision Ultra Vista anamorphic lenses, 16:9 frame. Naturalistic, motivated lighting only (sun, moon, practical lamps, screens, beacons); deep rich shadows with detail, controlled highlights, high dynamic range, no crushed blacks, no clipped skies. Color grade: cool teal and steel-blue in the shadows and water, warm amber in sunlight and practical lights, restrained saturation, filmic contrast curve. Subtle horizontal anamorphic flares only from real light sources, oval bokeh, gentle vignette, fine 35mm film grain. Atmospheric sea haze and mist for depth. Physically accurate ocean: correct wave scale, foam, spray, wakes and reflections. Composition on the rule of thirds with strong leading lines and clear foreground, midground and background separation. Restrained, credible, documentary-grade realism in the style of a Roger Deakins or Claudio Miranda maritime sequence; confident, not aggressive. STRICTLY: no text, no captions, no letters or numbers anywhere, no logos, no watermarks, no flags, no agency seals, insignia or hull markings, no weapons, no identifiable faces."""
+Photoreal cinematic film still from a premium maritime-technology commercial. Shot on ARRI Alexa 65 with Panavision Ultra Vista anamorphic lenses, 16:9 frame. ONE CONTINUOUS NIGHT: every frame is the same moonlit night on the open ocean. Cool silver-blue moonlight from a high half moon, deep navy sky with faint stars, moon glitter on the swell. No sunset, no dawn, no daylight, no coastline, no city lights. Low-key, naturalistic, motivated lighting only (moon, starlight, sea reflections); rich deep shadows that still hold detail, controlled highlights, no crushed blacks. Color grade: steel-blue and teal shadows, silver highlights, restrained saturation, filmic contrast curve. Subtle horizontal anamorphic flares only from real light sources, oval bokeh, gentle vignette, fine 35mm film grain. Light sea mist for depth. Physically accurate ocean: correct wave scale, foam, spray and wakes. Rule-of-thirds composition with clear foreground, midground and background. Credible, documentary-grade realism in the style of a Roger Deakins night-at-sea sequence; serious, confident, not aggressive. STRICTLY: no text, no captions, no letters or numbers, no logos, no watermarks, no flags, no seals, insignia or hull markings, no weapons, no identifiable faces."""
 
-PRODUCT = """THE PRODUCT — MARLIN (the attached reference sheet is the single source of truth; match its design, proportions, parts and colors exactly, do not add or remove features):
-An uncrewed, autonomous hydrofoil drone. No cabin, no cockpit, no windows, no people aboard. A long, smooth, rounded torpedo-like pod hull in glossy white with a navy-blue band along its side and a dark charcoal underside, fine panel lines and small access hatches on top. At the stern stands a large circular ducted fan: a white duct ring with a navy-blue rim, housing a three-blade dark-grey propeller with a white spinner, the ring rising well above the hull. Behind the duct, a navy-blue V-shaped tail fin on a white vertical pylon. On top of the duct ring, a short grey sensor mast with a horizontal sensor bar and a thin antenna, flanked by two blue beacon lights. A single dark raked hydrofoil strut extends down from beneath the forward hull into the water. When foiling, the hull rides clear above the surface on that strut, with a clean thin plume of spray where the strut cuts the water. It is compact (under 24 feet long)."""
+PRODUCT = """THE PRODUCT — MARLIN (the attached gray reference sheet is the single source of truth; match its design, proportions, parts and colors exactly, do not add or remove features):
+An uncrewed, autonomous hydrofoil vessel. No cabin, no cockpit, no windows, no people aboard. Painted entirely in a uniform matte cool slate gray with a slightly darker gray band and a dark charcoal underside; no white, no blue. NO lights of any kind on it: no beacons, no light bar, no strobes. A long, smooth, rounded pod hull with fine panel lines and small hatches on top. At the stern stands a large circular ducted fan: a gray duct ring housing a three-blade dark propeller with a gray spinner, rising well above the hull. Behind the duct, a gray V-shaped tail fin on a vertical pylon. On top of the duct ring, a short sensor mast with a horizontal sensor bar and a thin antenna. A single dark raked hydrofoil strut extends down from beneath the forward hull. Hull-borne: it floats low on its hull with the strut in the water. Foil-borne: the hull rides clear above the surface on the strut, with a thin plume of spray where the strut cuts the water. Compact, under 24 feet long."""
 
 NO_MARLIN = "Marlin does NOT appear in this frame; the reference sheet is attached only for continuity of the film."
 
+BOAT = ("a long, low, open fiberglass speedboat with twin large outboard engines, running with no lights, "
+        "wrapped cargo bundles strapped down on its deck, three crew hunched low behind a center console (faces not visible)")
+
 FRAMES = {
-    'f01': ("Night sea, the gap", NO_MARLIN + """
-Extreme wide establishing shot at night over the open ocean under a moonless sky with faint stars. Far away on the horizon, a thin line of coastal city lights glows warm amber. In the lower-left third, a small, low, unlit fast open boat with outboard engines cuts diagonally across the black water toward the coast, leaving a long pale wake that is the brightest element in frame; the boat itself is nearly a silhouette, its occupants indistinct shapes. Camera: high drone perspective about 40 meters up, 24mm, tilted down, slow push. Lighting: cold blue moonless ambient, faint starlight on the swell. Mood: quiet, ominous, something slipping through."""),
-    'f02': ("Operations center", NO_MARLIN + """
-Medium shot inside a dim, modern maritime operations center at night. In the soft-focus foreground, the shoulder and back of a seated operator in a dark sweater (face not visible). They look at a large wall display showing a dark abstract nautical chart: a coastline, a few small grey vessel dots sitting still, and one bright orange dotted track line curving fast toward the coast. Screens use abstract symbols only, no readable text or numbers. The display is the main light source, casting cool blue and orange glow across the room; a second row of dark monitors falls off into shadow. Camera: 50mm anamorphic at seated eye level, shallow focus on the orange track. Mood: realization, urgency."""),
-    'f03': ("Patrol at the pier", NO_MARLIN + """
-Blue hour before dawn at a working harbor pier. A generic conventional patrol boat (grey rigid-hull inflatable with a center console and twin outboards, no markings, no lettering) is still tied to the dock. Two crew members in generic dark-navy foul-weather jackets and life vests hurry down the pier toward it carrying gear, seen from behind at medium-wide distance, faces not visible. Warm sodium-vapor dock lights make amber pools on wet planks against a cold blue sky. Camera: low angle at dock level, 35mm; a mooring line and cleat soft in the foreground. Mood: effort and delay, the response has not left yet."""),
-    'f04': ("Patrol in heavy chop", NO_MARLIN + """
-The same generic grey patrol boat as in the second attached image (grey rigid-hull inflatable with a center console and twin outboards, no markings), now underway with its two crew aboard, pounding through steep, heavy chop in open water, its bow slamming into a wave and throwing a wall of white spray, the hull pitching hard, visibly slowed. Overcast dawn, steel-grey sea with wind streaks and whitecaps, rain haze. The crew are small, hunched, indistinct. Camera: 200mm telephoto from a chase position ahead and to the side, compressing the waves into a wall; slight handheld energy. Mood: struggle, time lost."""),
-    'f05': ("Marlin wakes", """
-Night at a quiet, modern floating dock. Marlin rests in the water, hull floating with its strut submerged, moored alongside the dock. Its two blue beacon lights have just switched on, throwing blue light across the white duct ring and rippling over the black water; a faint glow on the sensor mast. Camera: low angle near the waterline, 40mm anamorphic, front three-quarter view of Marlin filling the right two-thirds of the frame; warm dock lights bokeh in the background, thin mist on the water. Mood: a machine waking up, calm before the launch, anticipation."""),
-    'f06': ("Marlin rises — title", """
-Dawn breaking, golden sun just above the horizon. Marlin accelerates away from camera and lifts onto its hydrofoil: the hull rising clear of the water on its single strut, ducted fan spinning with motion-blurred blades, a dramatic sheet of spray and mist backlit and glowing gold by the low sun. Camera: right at the waterline, low and close, 32mm, rear three-quarter view as it pulls away; a few droplets catching light near the lens. Upper third of frame stays clean sky for a title. Mood: the hero reveal, awe and optimism."""),
-    'f07': ("01 Get there", """
-Full-speed tracking shot: Marlin foiling flat and level at very high speed across the open ocean, hull fully clear of the water, only the strut slicing the surface and throwing a thin knife-edge rooster tail of spray; fan blades motion-blurred. Bright morning light, deep-blue sea with moderate chop and whitecaps. Camera: helicopter tracking alongside at matched speed, side profile with Marlin travelling left to right (nose pointing to frame right), 85mm, water streaked with panning motion blur while Marlin stays tack sharp. Marlin on the left third with generous lead room ahead. Mood: pure speed and stability."""),
-    'f08': ("02 See it", """
-Over-the-shoulder shot from just behind and above Marlin's sensor mast: the mast, sensor bar and the two blue beacons are large and soft-focus in the left foreground. Across the water, about 300 meters away in the right third of frame and in sharp focus, a small dark fast open boat with outboard engines (occupants indistinct). Late afternoon, low sun, light haze, glittering sea. Marlin is holding at a standoff on its foil, watching. Camera: 100mm telephoto compression, shallow depth of field. Clean negative space around the distant boat for a graphic overlay. Mood: calm, observational, in control."""),
-    'f09': ("03 Stay on it", """
-Dusk turning to night on rough open water. The small dark fast open boat (unlit, outboards, occupants indistinct) runs away in the midground right, throwing spray. Close behind it, Marlin follows on its foil in the left foreground, sharp, both blue beacon lights flashing brightly and washing the spray, the waves and the mist in vivid blue light. Camera: low, 35mm, chase position behind and to the side of Marlin. Mood: tense but controlled; it is not letting go."""),
-    'f10': ("Partner cutter closing", NO_MARLIN.replace('does NOT appear in this frame', 'appears only as two tiny distant flashing blue lights') + """
-Night at sea. A generic white patrol cutter (medium size, clean white hull, grey superstructure, no stripes, no lettering, no numbers, no flags, no insignia) drives in fast from the right, bow throwing spray, a searchlight beam cutting through sea mist. Far in the left background, a tiny pair of flashing blue lights marks Marlin holding on the target. Camera: wide 28mm from near the waterline at the cutter's bow quarter. Mood: the hand-off, help arriving."""),
-    'f11': ("Recap — mission complete", """
-First light at dawn on a calm sea. In the soft-focus background, the same white patrol cutter as in the second attached image (clean white hull, grey superstructure, no stripes, no markings; a civilian patrol cutter, not a grey warship) lies alongside the small dark open boat; a small, indistinct boarding team works calmly, no force shown. In the right foreground, Marlin rests settled on the water, hull floating, beacons off, its white hull catching the warm sunrise, watching from a respectful distance. Camera: 50mm, low near the water, Marlin sharp in the foreground. Mood: resolution, quiet confidence, mission accomplished."""),
-    'f12': ("Hero beauty shot", """
-Iconic beauty shot at golden hour: Marlin foiling at speed across glassy water, travelling toward frame left, the low sun behind it rimming the hull, duct ring and tail fin with gold light, spray glowing. Composition: Marlin small in the lower-right third; vast negative space of warm sky and sea in the center and upper frame for a logo and title. Camera: 135mm from slightly ahead and to the side. Mood: premium, inevitable, the future of maritime response."""),
+    'a01': ("The boat", NO_MARLIN + f"""
+Tight, fast, moving shot of {BOAT}, running flat out across the open ocean at night. Spray sheets off the bow and glows silver in the moonlight; the outboards throw a white rooster tail. Camera: 35mm from a chase position just off the bow quarter at water level, moving with the boat, slight motion blur on the water, the boat filling most of the frame. Mood: urgent, fast, dangerous."""),
+    'a03': ("Infrared ID from the aircraft", NO_MARLIN + f"""
+Thermal infrared camera image as seen by a patrol aircraft at night: monochrome white-hot rendering (hot is white, cold is black), black-and-gray tones, slight sensor noise and soft vignetting. Looking steeply down from altitude at {BOAT}: the hull and engines glow white-hot, twin wakes trail behind as two bright streaks, the cargo bundles read as lighter blocks on deck, the crew as small warm shapes. The boat sits diagonally across the center of frame, surrounded by dark textured sea. No overlay graphics, crosshairs or text (graphics are added later). Same boat as the second attached image."""),
+    'a06': ("Loiter", """
+Open ocean at night under moonlight, long slow swell. Marlin sits hull-borne, floating low on the water with its strut submerged, completely alone in a vast empty sea, the sensor mast on top of the duct. It has been out here for days: faint salt streaks on the gray paint. Camera: wide, 50mm, low near the water; Marlin medium-small in the right third; a moon glitter path on the water leads the eye to it; huge negative space of sea and starry sky. Mood: patient, persistent, quietly waiting."""),
+    'a07': ("Lift", """
+Camera right at the waterline, low and close, 28mm, front three-quarter view. Marlin spools up and climbs onto its single hydrofoil strut: the hull rising clear of the water, the ducted fan blades motion-blurred, a sheet of spray falling away and backlit by the moon into silver mist. Strong sense of acceleration, Marlin about to leave frame left. Same night, same sea as the second attached image."""),
+    'a09': ("The run", """
+Drone tracking shot alongside Marlin flying level at very high speed over dark night chop, hull fully clear of the water on its strut, perfectly steady as the sea builds beneath it; a thin knife-edge plume of spray from the strut glows silver in the moonlight; fan blades motion-blurred. Side profile travelling left to right (nose pointing to frame right), 85mm, water streaked with motion blur while Marlin stays tack sharp, generous lead room ahead. Same night as the second attached image. Mood: speed you can feel."""),
+    'a10a': ("Eyes on — Marlin infrared view", NO_MARLIN + f"""
+A TRUE THERMAL INFRARED camera image, fully monochrome grayscale with zero color: white-hot rendering (hot is white, cold is black), like real FLIR footage, slight sensor noise, soft vignetting. Thermal cameras do not see moonlight: there is NO moon, no moon glitter, no stars, no blue tint anywhere; the sky is flat dark gray and the cold sea is dark gray with subtle wave texture. Viewed from a low vantage just above sea level, at a standoff distance of a few hundred meters. {BOAT[0].upper() + BOAT[1:]}, seen side-on in the center of frame running left to right: the hull and engines white-hot, a bright wake behind, the crew as warm shapes. The sea is dark gray with texture, the horizon faint. Exactly the same white-hot look as the second attached image. No overlay graphics, crosshairs or text."""),
+    'a10b': ("Eyes on — standoff", f"""
+Night, moonlit open sea with moderate chop. In the midground right, {BOAT}, running fast left to right, dark against the moon glitter. In the left foreground, Marlin paces it at a standoff distance of a few hundred meters, HULL-BORNE: the hull sits IN the water like a boat, the waterline running along its darker gray band, the strut hidden under the surface and not visible, NOT up on the foil, no gap between hull and water, a modest bow wave and wake, steady and low. Far in the background on the boat's other flank, a second identical gray Marlin, also hull-borne, small and indistinct. Camera: 50mm low at water level just behind Marlin's quarter, Marlin sharp. Mood: calm discipline, watching, not letting go. Same boat as the second attached image."""),
 }
+
+# Extra continuity references: earlier frames attached after the reference sheet.
+CONTINUITY = {'a03': ['a01'], 'a07': ['a06'], 'a09': ['a06'], 'a10a': ['a03'], 'a10b': ['a01']}
 
 
 def prompt_for(fid):
     title, comp = FRAMES[fid]
     return f"{CINEMATOGRAPHY}\n\n{PRODUCT}\n\nSHOT {fid.upper()} — {title.upper()}. COMPOSITION, CAMERA AND LIGHTING FOR THIS FRAME:\n{comp.strip()}"
-
-
-# Extra continuity references: earlier frames attached after the reference sheet.
-CONTINUITY = {'f04': ['f03'], 'f11': ['f10']}
 
 
 def data_uri(path):

@@ -1,0 +1,97 @@
+{
+ "positive_global_styles": [
+  "tense modern cinematic score",
+  "hybrid electronic and orchestral",
+  "pulsing analog synth bass",
+  "taut string ostinato",
+  "deep cinematic percussion",
+  "serious, professional, confident",
+  "clean modern mix",
+  "instrumental",
+  "120 bpm"
+ ],
+ "negative_global_styles": [
+  "vocals",
+  "choir",
+  "lyrics",
+  "rap",
+  "EDM drop",
+  "dubstep",
+  "cheesy",
+  "lo-fi",
+  "jazz"
+ ],
+ "sections": [
+  {
+   "section_name": "Pulse returns",
+   "duration_ms": 3400,
+   "lines": [],
+   "positive_local_styles": [
+    "quiet low synth pulse underneath",
+    "anticipation",
+    "building"
+   ],
+   "negative_local_styles": [
+    "drums",
+    "loud"
+   ]
+  },
+  {
+   "section_name": "Kick in and drive",
+   "duration_ms": 16600,
+   "lines": [],
+   "positive_local_styles": [
+    "full score kicks in hard on the first beat",
+    "driving propulsive drums",
+    "rising strings",
+    "confident",
+    "speed you can feel"
+   ],
+   "negative_local_styles": [
+    "quiet",
+    "fade",
+    "silence"
+   ]
+  },
+  {
+   "section_name": "Steady watch",
+   "duration_ms": 6000,
+   "lines": [],
+   "positive_local_styles": [
+    "steady disciplined pulse",
+    "sustained tension under control"
+   ],
+   "negative_local_styles": [
+    "silence",
+    "fade out"
+   ]
+  },
+  {
+   "section_name": "Broaden and resolve",
+   "duration_ms": 10000,
+   "lines": [],
+   "positive_local_styles": [
+    "score broadens",
+    "warm",
+    "relief",
+    "resolving",
+    "big and confident"
+   ],
+   "negative_local_styles": [
+    "dark",
+    "silence"
+   ]
+  },
+  {
+   "section_name": "Final chord",
+   "duration_ms": 4000,
+   "lines": [],
+   "positive_local_styles": [
+    "final sustained resolving chord"
+   ],
+   "negative_local_styles": [
+    "new theme"
+   ]
+  }
+ ]
+}
