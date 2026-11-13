@@ -15,7 +15,22 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
-## Animatic v2.0 (client Storyboard V5): current
+## Animatic v3.0 (Storyboard V5, Blender previz): current
+
+Review file: `review/marlin-animatic-v3.0.mp4` (24 fps). Shot-by-shot check against the storyboard: `docs/v3-shot-checklist.md`.
+Clean reference clips per shot (for the video model): `review/v3/reference/`.
+
+| Part | Where | How to rebuild |
+|---|---|---|
+| 3D shots 01, 03, 06, 07, 09, 10 | `blender/previz.py` (models, ocean, light, spray, cameras), scenes in `blender/scenes/*.blend` | `blender/render_all.sh` (Cycles on CPU; resumable). One frame: `python blender/previz.py --shot 07 --still 2.0` |
+| 2D shots 02, 04, 05, 08, 11, 12 | `src/v3/` (Radar, COP, end card) | part of the Remotion render |
+| Sound | `scripts/build_audio_v3.py` (all effects synthesized; score + narrator arranged and mastered) | `/opt/venv-audio/bin/python scripts/build_audio_v3.py` |
+| Sound QC | `scripts/audio_qc.py` (AudioSet classifier: flags speech/scream-like sound) | `python scripts/audio_qc.py public/audio/v3/sfx.wav public/audio/v3/music.wav` |
+| Edit | `src/v3/MarlinV3.tsx`, timings in `src/v3/timeline.ts` | `npx remotion render src/index.ts Marlin review/marlin-animatic-v3.0.mp4` |
+
+Blender is used as a Python module (`pip install bpy==5.3.0` in a venv); the audio tools need `torch transformers soundfile librosa scipy`.
+
+## Animatic v2.0 (client Storyboard V5)
 
 Review file: `review/marlin-animatic-v2.0.mp4`. Code: `src/v2/` (composition `Marlin`; v1 kept as `MarlinV1`).
 Fix-by-fix log: `docs/v2-client-fixes.md`. Render + master audio: `npm run master`.

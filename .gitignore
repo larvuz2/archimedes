@@ -2,3 +2,7 @@ node_modules/
 out/
 .DS_Store
 *.log
+blender/out/
+*.blend1
+public/audio/v3/*.wav
+public/audio/v3/elements/
