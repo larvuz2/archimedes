@@ -28,6 +28,21 @@ Source of truth: `docs/reference/Marlin_Counter-Drug_Storyboard_v2.pdf` (titled 
 | **11 · The fleet** 0:46–0:56 | Pull back to the full display, framed exactly like shot 04. Two Marlins hold the boat. Five nearby slide over, rings re-tile with no holes. Short arrows on the five. Three words one per beat. Score broadens and resolves; three hits. | Same framing as 04. Two hold the contact, five slide over with arrows, rings re-tile. PARTNER track inbound. COVER. / SPRINT. / PERSIST. land on the VO words with three hits. |
 | **12 · End card** 0:56–1:00 | Hard cut to navy. A beat of silence, then logo and product name land. VO [pause] "Marlin." Logo · MARLIN · Cover. Sprint. Persist. · [DEMO REQUEST / CONTACT] · disclaimer. Single engine rev to black. | Hard cut, 0.75 s of silence, logo + MARLIN land, "Marlin." at 0:57.1, tagline, contact placeholder, disclaimer, one fan rev, fade to black. |
 
+## Sound check on the final file
+`scripts/audio_qc.py` (AudioSet classifier) on `review/marlin-animatic-v3.0.mp4`:
+- Speech is detected only under the four narrator lines (0:23-0:27, 0:42-0:45, 0:52-0:55, 0:57).
+- Highest scream-like score anywhere in the film: 0.005 (the v2.0 outboard clip scored 0.61).
+- Shots 01-03, where the screams were heard in v2.0: speech score never above 0.06.
+- Every effect and both stems (effects, music) pass with a worst score of 0.09 against a 0.15 threshold.
+- Loudness -13.9 LUFS integrated, peak -1.4 dBFS.
+
+Why v2.0 screamed: the outboard effect had been generated from a prompt containing the word "screaming"
+(the storyboard's own phrase for the engines). v3.0 uses no generated effects at all.
+
+Caveats: the effects are synthesized stand-ins, not field recordings (the storyboard asks for real engine and
+water audio in the finished film); the "distant radio" in shot 10 is squelch and static with no voice; score and
+narrator are the v2.0 takes, re-arranged. Nobody has listened to this mix: the checks above are instrumental.
+
 ## The 13 fixes on page 6
 All still applied (see `docs/v2-client-fixes.md`); v3.0 strengthens 01, 04, 05, 08 and 10 by showing real motion in 3D:
 no coastline or lights in the opening, Marlin loitering at sea (not at a pier), defense gray with no light bar,
