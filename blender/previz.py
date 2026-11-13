@@ -1375,7 +1375,65 @@ class Shot10(Shot):
                                 marlin2=lambda t, st, f: (st['marlin2'][f]['x'], st['marlin2'][f]['y'], st['marlin2'][f]['z'] + 1.5)))
 
 
-SHOTS = {s.id: s for s in (Shot01, Shot03, Shot06, Shot07, Shot09, Shot10)}
+# ---- v4 proposal stills (new shots asked for in the 13 Nov audio note; used in the structure PDF)
+class Shot06B(Shot):
+    """v4 · Marlin waits. Close, low angle from off the bow: the duct and sensor mast against the moon.
+    Sitting there, waiting, always ready."""
+    id = '06b'
+    duration = 4.0
+    ocean = dict(wave_scale=0.8, choppiness=0.6, wind=13.0, repeat=3, alignment=0.7, smallest=0.9, seed=3)
+    moon = dict(az=143.0, el=10.5, strength=2.6, disc=True, ambient=1.1, fill=(-40.0, 35.0, 0.35))
+    exposure = 0.85
+
+    def build(self):
+        m = build_marlin()
+        m['state'] = lambda t: dict(x=0.0, y=0.0, heading=0.0, follow=1.0, foil=0.0, roll=rad(1.2) * wobble(t, 2, (0.21, 0.37, 0.6)), prop_angle=t * 1.2)
+        m['wake'] = dict(strength=0.0, w0=1.0, side=0.0)
+
+        def camera(t, state, f):
+            k = t / self.duration
+            pos = vlerp((7.6, -4.9, 0.85), (7.0, -4.4, 0.85), k)
+            return pos, (-1.3, 0.0, 2.05), 40.0, rad(0.4) * wobble(t, 3, (0.15, 0.28, 0.4))
+        return dict(vessels=[m], camera=camera, focus=lambda t: (0.0, 0.0), cam_clearance=0.45)
+
+
+class ShotVector(Shot):
+    """v4 · Multiple Marlins vectoring in. Three Marlins on their foils converging on one point, seen from a
+    drone above and behind the nearest."""
+    id = 'v1'
+    duration = 4.0
+    ocean = dict(wave_scale=0.8, choppiness=1.05, wind=10.0, repeat=3, seed=5)
+    moon = dict(az=-5.0, el=11.0, strength=2.5, disc=True, ambient=1.15, fill=(200.0, 40.0, 0.3))
+    exposure = 0.9
+
+    def build(self):
+        V = 100 * KT
+        fleet = [('marlin', 0.0, 0.0, 0.0), ('marlin2', 52.0, 23.0, rad(-9)), ('marlin3', 74.0, -31.0, rad(11))]
+        vessels, ems = [], []
+        for i, (name, x0, y0, hd) in enumerate(fleet):
+            m = build_marlin(name)
+            m['state'] = (lambda t, x0=x0, y0=y0, hd=hd, i=i: dict(
+                x=x0 + V * math.cos(hd) * t, y=y0 + V * math.sin(hd) * t, heading=hd, follow=0.0, foil=1.0,
+                dz=0.02 * wobble(t, 3 + i), pitch=rad(0.5), roll=rad(0.4) * wobble(t, 7 + i), prop_angle=t * 95.0 + i))
+            m['wake'] = dict(strength=1.0, w0=0.3, side=0.0, wake_len=90.0)
+            vessels.append(m)
+            e = spray_emitter(f'plume_{name}', (1, 400), 7000, life=0.7, vel_normal=5.5, inherit=0.86, size=0.06, rand=1.6, quad=(0.5, 0.35))
+
+            def place(t, state, f, name=name):
+                st = state[name][f]
+                c, sn = math.cos(st['heading']), math.sin(st['heading'])
+                return (st['x'] + 0.55 * c, st['y'] + 0.55 * sn, 0.1), (0, rad(-35), st['heading'])
+            e['place'] = place
+            ems.append(e)
+
+        def camera(t, state, f):
+            mx = state['marlin'][f]['x']
+            pos = (mx - 15.5, -1.2, 5.6 + 0.05 * wobble(t, 1))
+            return pos, jitter((mx + 40.0, -1.5, 1.2), t, 5, 0.04), 30.0, rad(0.5) * wobble(t, 9, (0.3, 0.7, 1.5))
+        return dict(vessels=vessels, emitters=ems, camera=camera, focus=lambda t: (V * t + 25.0, 0.0), cam_clearance=1.0)
+
+
+SHOTS = {s.id: s for s in (Shot01, Shot03, Shot06, Shot07, Shot09, Shot10, Shot06B, ShotVector)}
 
 if __name__ == '__main__':
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
