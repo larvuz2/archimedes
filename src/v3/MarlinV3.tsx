@@ -106,7 +106,7 @@ const Shot03: React.FC = () => {
         <Brackets cx={p.x} cy={p.y} w={900} h={380} k={k} />
       </svg>
       <div style={{...irChip, position: 'absolute', top: 92, left: 40}}>IR WHT</div>
-      <div style={{...irChip, position: 'absolute', top: 92, right: 40}}>NFOV</div>
+      <div style={{...irChip, position: 'absolute', top: 124, right: 40}}>NFOV</div>
       <div style={{...irChip, position: 'absolute', bottom: 90, left: 40, fontSize: 18}}>AZ {az} EL {el}</div>
       <div style={{position: 'absolute', left: p.x - 250, top: p.y + 235, width: 500, textAlign: 'center', fontFamily: fonts.mono, fontSize: 24, color: colors.threat,
         letterSpacing: '0.12em', opacity: k, lineHeight: 1.5, textShadow: '0 0 10px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,1)'}}>
@@ -153,7 +153,7 @@ const Shot10: React.FC = () => {
           {pull < 0.3 && (
             <>
               <div style={{...irChip, position: 'absolute', top: 92, left: 40, opacity: 1 - pull * 3}}>IR WHT</div>
-              <div style={{...irChip, position: 'absolute', top: 92, right: 40, opacity: 1 - pull * 3}}>NFOV</div>
+              <div style={{...irChip, position: 'absolute', top: 124, right: 40, opacity: 1 - pull * 3}}>NFOV</div>
             </>
           )}
           {pull > 0.5 && (
