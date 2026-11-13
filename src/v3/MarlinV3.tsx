@@ -182,14 +182,14 @@ const EndCard: React.FC = () => {
   const {fps} = useVideoConfig();
   const t = 56 + frame / fps;
   const land = (a: number) => interpolate(t, [a, a + 0.3], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const toBlack = ramp(t, 59.45, 59.95);
+  const toBlack = ramp(t, 59.6, 59.96);
   return (
     <AbsoluteFill style={{background: colors.navy, alignItems: 'center', justifyContent: 'center', color: colors.white}}>
       <Img src={staticFile('assets/logo/archimedes-white-temp.png')} style={{width: 400, opacity: land(T.logoLands)}} />
       <div style={{fontFamily: fonts.display, fontWeight: 700, fontSize: 140, letterSpacing: '0.3em', paddingLeft: '0.3em', marginTop: 34, opacity: land(T.logoLands)}}>MARLIN</div>
-      <div style={{fontFamily: fonts.mono, fontSize: 36, letterSpacing: '0.12em', marginTop: 8, opacity: land(T.vo.vo4 + 0.55)}}>Cover. Sprint. Persist.</div>
-      <div style={{width: 140, height: 4, background: colors.threat, margin: '38px 0', opacity: land(T.vo.vo4 + 0.8)}} />
-      <div style={{fontFamily: fonts.mono, fontSize: 26, color: colors.steel, letterSpacing: '0.12em', opacity: land(T.vo.vo4 + 0.8)}}>{CONTACT_V3}</div>
+      <div style={{fontFamily: fonts.mono, fontSize: 36, letterSpacing: '0.12em', marginTop: 8, opacity: land(T.vo.vo4 + 0.4)}}>Cover. Sprint. Persist.</div>
+      <div style={{width: 140, height: 4, background: colors.threat, margin: '38px 0', opacity: land(T.vo.vo4 + 0.6)}} />
+      <div style={{fontFamily: fonts.mono, fontSize: 26, color: colors.steel, letterSpacing: '0.12em', opacity: land(T.vo.vo4 + 0.6)}}>{CONTACT_V3}</div>
       <div style={{position: 'absolute', bottom: 56, fontFamily: fonts.mono, fontSize: 17, color: colors.steel, maxWidth: 1500, textAlign: 'center', opacity: land(T.logoLands) * 0.9}}>{DISCLAIMER_V3}</div>
       <AbsoluteFill style={{background: '#000', opacity: toBlack}} />
     </AbsoluteFill>

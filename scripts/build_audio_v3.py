@@ -161,7 +161,7 @@ def engine_buzz(order_hz, n_harm=70, peak=420.0, width=1.5):
     return out
 
 
-def outboards(dur, slam_hz=1.15, seed_phase=1.0):
+def outboards(dur, slam_hz=1.15, seed_phase=1.0, thumps=True):
     """Twin outboards flat out: hard engine drone whose revs flare as the hull slams, under water rush
     and hull slap."""
     t = tt(dur)
@@ -178,7 +178,7 @@ def outboards(dur, slam_hz=1.15, seed_phase=1.0):
     rush = filt(colored(dur, 0.7), 'band', [700, 7500]) * (0.55 + 0.45 * smoothstep((-slam + 0.2) / 0.8))
     thump_env = smoothstep((-slam - 0.72) / 0.28) ** 2
     thump = filt(colored(dur, 2.0), 'band', [40, 170]) * thump_env
-    x = rms_norm(out, -22) + rms_norm(roar, -24) + rms_norm(rush, -23) + rms_norm(thump, -25) * 1.4
+    x = rms_norm(out, -22) + rms_norm(roar, -24) + rms_norm(rush, -23) + (rms_norm(thump, -25) * 1.4 if thumps else 0)
     return x * env(len(x), 0.02, 0.05)
 
 
@@ -238,23 +238,35 @@ def held_tone(dur):
 
 
 def water_and_wind(dur):
-    """Open sea at night from a floating hull: water lapping, a light breeze. Stereo."""
+    """Open sea at night from a floating hull: small waves lapping and slapping, a light breeze. Stereo.
+    Bright and splashy on purpose (low-heavy noise reads as rumble, not water)."""
     n = n_(dur)
     out = np.zeros((n, 2))
     t0 = 0.0
-    while t0 < dur - 0.4:
-        d = rng.uniform(0.9, 1.7)
-        lap = filt(colored(d, 1.0), 'band', [rng.uniform(260, 420), rng.uniform(1800, 3200)])
-        lap *= np.sin(np.pi * np.linspace(0, 1, len(lap)) ** rng.uniform(0.55, 0.85)) ** 2
-        lap *= slow_random(d, 9.0, 0.5)
-        st = pan(lap * rng.uniform(0.5, 1.0), rng.uniform(-0.7, 0.7))
+    while t0 < dur - 0.3:
+        d = rng.uniform(0.5, 1.1)
+        k = np.linspace(0, 1, n_(d))
+        wash = filt(colored(d, 0.3), 'band', [rng.uniform(900, 1500), rng.uniform(5500, 8500)])
+        wash *= np.sin(np.pi * k ** rng.uniform(0.45, 0.7)) ** 2
+        # a few gurgly droplets inside each lap
+        drops = np.zeros(len(k))
+        for _ in range(rng.integers(3, 8)):
+            i = rng.integers(0, max(1, len(k) - n_(0.06)))
+            f0 = rng.uniform(900, 2600)
+            dt = tt(0.05)
+            blob = np.sin(2 * np.pi * (f0 + 900 * dt / 0.05) * dt) * np.exp(-dt / 0.012)
+            drops[i:i + len(blob)] += blob[:len(drops) - i] * rng.uniform(0.2, 0.6)
+        lap = wash + 0.5 * drops
+        st = pan(lap * rng.uniform(0.45, 1.0), rng.uniform(-0.75, 0.75))
         i0 = n_(t0)
         seg = st[:n - i0]
         out[i0:i0 + len(seg)] += seg
-        t0 += rng.uniform(0.55, 1.15)
-    wind = filt(colored(dur, 1.6), 'band', [90, 900]) * slow_random(dur, 0.6, 0.45)
-    wind_st = np.stack([wind, np.roll(wind, n_(0.011))], axis=1)
-    out = rms_norm(out, -24) + rms_norm(wind_st, -27)
+        t0 += rng.uniform(0.3, 0.75)
+    bed = filt(colored(dur, 0.6), 'band', [700, 6000]) * slow_random(dur, 0.8, 0.35)  # constant gentle wash
+    wind = filt(colored(dur, 1.0), 'band', [350, 2200]) * slow_random(dur, 0.5, 0.5)
+    bed_st = np.stack([bed, np.roll(bed, n_(0.007))], axis=1)
+    wind_st = np.stack([wind, np.roll(wind, n_(0.013))], axis=1)
+    out = rms_norm(out, -24) + rms_norm(bed_st, -31) + rms_norm(wind_st, -32)
     return out * env(n, 0.5, 0.6)[:, None]
 
 
@@ -389,7 +401,7 @@ def build_sfx():
     b.add('02_hook', reverb(hook, 0.4, 0.2), T['radar_hook'], -21.0)
     # 03 sensor servo whir; outboards under the score (far below, filtered)
     b.add('03_servo', servo_whir(), 7.02, -24.0)
-    far_ob = filt(outboards(3.0, seed_phase=2.2), 'low', 1300)
+    far_ob = filt(filt(outboards(3.0, seed_phase=2.2, thumps=False), 'low', 1600), 'high', 140)  # heard from far off: no hull thumps
     b.add('03_outboards_under', far_ob, 7.0, -13.0)
     # 04 console tones
     b.add('04_tick', blip(1760, 0.03, 0.012), 10.12, -26.0)
