@@ -7,3 +7,6 @@ blender/out/
 public/audio/v3/*.wav
 public/audio/v3/elements/
 docs/proposals/*/index.html
+public/audio/v4/*.wav
+public/audio/v4/candidates/
+__pycache__/

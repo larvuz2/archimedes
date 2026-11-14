@@ -955,7 +955,7 @@ def run_shot(shot, args):
             if v.get('prop') is not None:
                 keyed(v['prop'], f, rot=(s.get('prop_angle', t * 70.0), 0, 0))
             if v.get('sensor') is not None:
-                keyed(v['sensor'], f, rot=(0, 0, t * 2 * math.pi * 0.45))
+                keyed(v['sensor'], f, rot=(0, 0, s.get('sensor_angle', t * 2 * math.pi * 0.45)))
         for e in scene.get('emitters', []):
             loc, rot = e['place'](t, state, f)
             loc = (loc[0], loc[1], h(loc[0], loc[1]) + loc[2]) if e.get('on_sea', True) else loc
@@ -1375,6 +1375,13 @@ class Shot10(Shot):
                                 marlin2=lambda t, st, f: (st['marlin2'][f]['x'], st['marlin2'][f]['y'], st['marlin2'][f]['z'] + 1.5)))
 
 
+class Shot10H(Shot10):
+    """v4 · the standoff holds: three more seconds of shot 10 (Marlin hull-borne, pacing the boat) for the surveil beats."""
+    id = '10h'
+    duration = 9.0
+    first_frame = 145
+
+
 # ---- v4 proposal stills (new shots asked for in the 13 Nov audio note; used in the structure PDF)
 class Shot06B(Shot):
     """v4 · Marlin waits. Close, low angle from off the bow: the duct and sensor mast against the moon.
@@ -1433,7 +1440,186 @@ class ShotVector(Shot):
         return dict(vessels=vessels, emitters=ems, camera=camera, focus=lambda t: (V * t + 25.0, 0.0), cam_clearance=1.0)
 
 
-SHOTS = {s.id: s for s in (Shot01, Shot03, Shot06, Shot07, Shot09, Shot10, Shot06B, ShotVector)}
+# ---- v4 detail shots: short cutaways so the edit can cut on every beat
+class ShotSensor(Shot):
+    """v4 · The sensor head sweeps, then stops dead on the contact. Extreme close-up against the night sky."""
+    id = 's1'
+    duration = 1.75
+    ocean = dict(wave_scale=0.8, choppiness=0.6, wind=13.0, repeat=3, alignment=0.7, smallest=0.9, seed=3)
+    moon = dict(az=150.0, el=14.0, strength=2.8, disc=True, ambient=1.2, fill=(-35.0, 30.0, 0.5))
+    exposure = 0.95
+
+    def build(self):
+        m = build_marlin()
+        stop = rad(-36)  # ends broadside to the camera
+
+        def st(t):
+            k = smooth(ramp(t, 0.0, 1.05))
+            return dict(x=0.0, y=0.0, heading=0.0, follow=1.0, foil=0.0, roll=rad(0.8) * wobble(t, 2, (0.21, 0.37, 0.6)),
+                        prop_angle=t * 1.2, sensor_angle=stop - rad(250) * (1 - k) ** 2)
+        m['state'] = st
+        m['wake'] = dict(strength=0.0, w0=1.0, side=0.0)
+
+        def camera(t, state, f):
+            z = state['marlin'][f]['z']
+            k = t / self.duration
+            pos = vlerp((1.55, -2.5, z + 2.75), (1.3, -2.2, z + 2.8), k)
+            return pos, (-1.75, 0.0, z + 3.3), 50.0, rad(0.3) * wobble(t, 3, (0.15, 0.28, 0.4))
+        return dict(vessels=[m], camera=camera, focus=lambda t: (0.0, 0.0), cam_clearance=0.5)
+
+
+class ShotFan(Shot):
+    """v4 · The fan comes alive. Close on the duct as the blades go from still to a blur."""
+    id = 'f1'
+    duration = 1.75
+    ocean = dict(wave_scale=0.8, choppiness=0.6, wind=13.0, repeat=3, alignment=0.7, smallest=0.9, seed=3)
+    moon = dict(az=140.0, el=12.0, strength=2.8, disc=False, ambient=1.2, fill=(-30.0, 30.0, 0.55))
+    exposure = 1.0
+
+    def build(self):
+        m = build_marlin()
+        m['state'] = lambda t: dict(x=0.0, y=0.0, heading=0.0, follow=1.0, foil=0.0, roll=rad(0.8) * wobble(t, 2, (0.21, 0.37, 0.6)),
+                                    prop_angle=0.5 * 46.0 * max(0.0, t - 0.25) ** 2)
+        m['wake'] = dict(strength=0.0, w0=1.0, side=0.0)
+        e = spray_emitter('fanwash', (int(0.7 * FPS), int(1.75 * FPS)), 2600, life=0.9, vel_normal=7.0, inherit=0.1, size=0.05, rand=2.4, quad=(1.2, 2.2))
+        e['place'] = lambda t, state, f: ((state['marlin'][f]['x'] - 4.0, 0.0, 0.3), (0, rad(-62), 0))
+
+        def camera(t, state, f):
+            z = state['marlin'][f]['z']
+            k = smooth(t / self.duration)
+            pos = vlerp((2.6, -2.9, z + 1.25), (2.0, -2.4, z + 1.3), k)
+            return pos, (-1.7, 0.0, z + 1.72), 42.0, rad(0.5) * wobble(t, 3, (0.4, 0.9, 1.7))
+        return dict(vessels=[m], emitters=[e], camera=camera, focus=lambda t: (0.0, 0.0), cam_clearance=0.45)
+
+
+class ShotStrut(Shot):
+    """v4 · The foil strut slicing the surface at 100 knots. Low, close, tracking."""
+    id = 'k1'
+    duration = 1.75
+    ocean = dict(wave_scale=0.85, choppiness=1.1, wind=10.0, repeat=3, seed=5)
+    moon = dict(az=115.0, el=13.0, strength=2.6, disc=False, ambient=1.15, fill=(-60.0, 30.0, 0.4))
+    exposure = 0.95
+
+    def build(self):
+        V = 100 * KT
+        m = build_marlin()
+        m['state'] = lambda t: dict(x=V * t, y=0.0, heading=0.0, follow=0.0, foil=1.0, dz=0.02 * wobble(t, 3), pitch=rad(0.5),
+                                    roll=rad(0.35) * wobble(t, 7), prop_angle=t * 95.0)
+        m['wake'] = dict(strength=1.0, w0=0.3, side=0.0, wake_len=60.0)
+        e = spray_emitter('strutplume', (1, 400), 16000, life=0.55, vel_normal=6.0, inherit=0.86, size=0.05, rand=1.8, quad=(0.5, 0.35))
+        e['place'] = lambda t, state, f: ((state['marlin'][f]['x'] + 0.55, 0.0, 0.1), (0, rad(-35), 0))
+
+        def camera(t, state, f):
+            mx = state['marlin'][f]['x']
+            k = t / self.duration
+            rel = vlerp((4.4, -3.4, 0.5), (3.6, -3.0, 0.55), k)
+            pos = (mx + rel[0] + 0.05 * wobble(t, 1, (2.0, 4.1, 7.3)), rel[1], rel[2] + 0.05 * wobble(t, 3, (2.3, 4.7, 6.9)))
+            return pos, jitter((mx + 0.3, 0.0, 0.75), t, 5, 0.04), 30.0, rad(1.2) * wobble(t, 9, (0.8, 1.9, 3.7))
+        return dict(vessels=[m], emitters=[e], camera=camera, focus=lambda t: (V * t, 0.0), cam_clearance=0.38)
+
+
+class ShotTop(Shot):
+    """v4 · Straight down from a drone: one Marlin at speed, its wake drawing a line across the sea."""
+    id = 't1'
+    duration = 2.3
+    ocean = dict(wave_scale=0.85, choppiness=1.1, wind=10.0, repeat=3, seed=5)
+    moon = dict(az=30.0, el=24.0, strength=2.6, disc=False, ambient=1.4, fill=(200.0, 60.0, 0.4))
+    exposure = 1.05
+
+    def build(self):
+        V = 100 * KT
+        m = build_marlin()
+        m['state'] = lambda t: dict(x=V * t, y=0.0, heading=0.0, follow=0.0, foil=1.0, pitch=rad(0.5), roll=rad(0.3) * wobble(t, 7), prop_angle=t * 95.0)
+        m['wake'] = dict(strength=1.0, w0=0.45, side=0.0, wake_len=140.0)
+        e = spray_emitter('strutplume', (1, 400), 9000, life=0.7, vel_normal=5.5, inherit=0.86, size=0.07, rand=1.6, quad=(0.5, 0.35))
+        e['place'] = lambda t, state, f: ((state['marlin'][f]['x'] + 0.55, 0.0, 0.1), (0, rad(-35), 0))
+
+        def camera(t, state, f):
+            mx = state['marlin'][f]['x']
+            k = t / self.duration
+            # the Marlin crosses the frame on a diagonal while the drone descends a little
+            pos = (mx - 3.0 + 9.0 * k, 0.0, lerp(30.0, 24.0, k))
+            return pos, (pos[0] + 0.01, 0.0, 0.0), 32.0, rad(38)
+        return dict(vessels=[m], emitters=[e], camera=camera, focus=lambda t: (V * t, 0.0), cam_clearance=1.0)
+
+
+class ShotFront(Shot):
+    """v4 · Head-on: the Marlin comes straight at the lens on its foil."""
+    id = 'r2'
+    duration = 1.75
+    ocean = dict(wave_scale=0.85, choppiness=1.1, wind=10.0, repeat=3, seed=5)
+    moon = dict(az=172.0, el=12.0, strength=2.7, disc=True, ambient=1.15, fill=(10.0, 30.0, 0.35))
+    exposure = 0.95
+
+    def build(self):
+        V = 100 * KT
+        m = build_marlin()
+        m['state'] = lambda t: dict(x=V * t, y=0.0, heading=0.0, follow=0.0, foil=1.0, dz=0.02 * wobble(t, 3), pitch=rad(0.5),
+                                    roll=rad(0.4) * wobble(t, 7), prop_angle=t * 95.0)
+        m['wake'] = dict(strength=1.0, w0=0.3, side=0.0, wake_len=80.0)
+        e = spray_emitter('strutplume', (1, 400), 12000, life=0.6, vel_normal=5.5, inherit=0.86, size=0.055, rand=1.7, quad=(0.5, 0.35))
+        e['place'] = lambda t, state, f: ((state['marlin'][f]['x'] + 0.55, 0.0, 0.1), (0, rad(-35), 0))
+
+        def camera(t, state, f):
+            mx = state['marlin'][f]['x']
+            k = t / self.duration
+            rel = vlerp((30.0, -2.2, 0.9), (10.5, -1.6, 1.0), k)  # it gains on the camera
+            pos = (mx + rel[0], rel[1] + 0.05 * wobble(t, 1), rel[2] + 0.05 * wobble(t, 3, (2.3, 4.7, 6.9)))
+            return pos, jitter((mx + 1.0, 0.0, FOIL_RIDE + 0.9), t, 5, 0.05), 55.0, rad(0.9) * wobble(t, 9, (0.8, 1.9, 3.7))
+        return dict(vessels=[m], emitters=[e], camera=camera, focus=lambda t: (V * t + 10.0, 0.0), cam_clearance=0.5)
+
+
+class ShotIsolate(Shot):
+    """v4 · Isolate. From above: three Marlins arrive on their foils and take station ahead of the go-fast and
+    on both flanks, at standoff."""
+    id = 'i1'
+    duration = 3.5
+    ocean = dict(wave_scale=0.9, choppiness=1.05, wind=9.5, repeat=3, seed=5)
+    moon = dict(az=55.0, el=16.0, strength=2.6, disc=False, ambient=1.35, fill=(230.0, 50.0, 0.5))
+    exposure = 1.1
+
+    def build(self):
+        VG = 28 * KT
+        gf = build_gofast()
+        gofast_sheets(gf)
+        gf['state'] = gofast_state(v=VG)
+        gf['wake'] = dict(strength=1.0, w0=1.25, side=1.0, wake_len=150.0)
+        posts = [('marlin', (78.0, -6.0), (42.0, 0.0)), ('marlin2', (20.0, 78.0), (2.0, 38.0)), ('marlin3', (14.0, -80.0), (0.0, -38.0))]
+        vessels, ems = [gf], gofast_spray(density=1.2)
+        for i, (name, p0, p1) in enumerate(posts):
+            m = build_marlin(name)
+
+            def st(t, p0=p0, p1=p1, i=i):
+                k = smooth(ramp(t, -0.6, 3.3))
+                rx, ry = lerp(p0[0], p1[0], k), lerp(p0[1], p1[1], k)
+                dx, dy = (p1[0] - p0[0]), (p1[1] - p0[1])
+                hd = math.atan2(dy * (1 - k) * 0.5, VG * 3.9 + dx * (1 - k) * 0.5)
+                return dict(x=VG * t + rx, y=ry, heading=hd, follow=0.0, foil=1.0, dz=0.02 * wobble(t, 3 + i), pitch=rad(0.5),
+                            roll=rad(-6) * math.sin(math.pi * k) * (1 if dy > 0 else -1) * (abs(dy) > 10), prop_angle=t * 90.0 + i)
+            m['state'] = st
+            m['wake'] = dict(strength=1.0, w0=0.4, side=0.0, wake_len=110.0)
+            vessels.append(m)
+            e = spray_emitter(f'plume_{name}', (1, 400), 6000, life=0.7, vel_normal=5.5, inherit=0.86, size=0.08, rand=1.6, quad=(0.5, 0.35))
+
+            def place(t, state, f, name=name):
+                s_ = state[name][f]
+                c, sn = math.cos(s_['heading']), math.sin(s_['heading'])
+                return (s_['x'] + 0.55 * c, s_['y'] + 0.55 * sn, 0.1), (0, rad(-35), s_['heading'])
+            e['place'] = place
+            ems.append(e)
+
+        def camera(t, state, f):
+            gx = state['gofast'][f]['x']
+            k = smooth(t / self.duration)
+            rel = vlerp((-64.0, -58.0, 46.0), (-52.0, -50.0, 40.0), k)
+            return (gx + rel[0], rel[1], rel[2]), (gx + 14.0, 2.0, 0.0), 36.0, rad(0.6) * wobble(t, 9, (0.3, 0.7, 1.5))
+        tracks = dict(toi=lambda t, st, f: (st['gofast'][f]['x'], 0, 0.95))
+        for name, _, _ in posts:  # screen positions for the callouts in the edit
+            tracks[name] = lambda t, st, f, name=name: (st[name][f]['x'], st[name][f]['y'], st[name][f]['z'] + 1.2)
+        return dict(vessels=vessels, emitters=ems, camera=camera, focus=lambda t: (VG * t + 10.0, 0.0), cam_clearance=1.0, tracks=tracks)
+
+
+SHOTS = {s.id: s for s in (Shot01, Shot03, Shot06, Shot07, Shot09, Shot10, Shot10H, Shot06B, ShotVector, ShotSensor, ShotFan, ShotStrut, ShotTop, ShotFront, ShotIsolate)}
 
 if __name__ == '__main__':
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]

@@ -1,0 +1,158 @@
+{
+ "positive_global_styles": [
+  "aggressive dark hybrid trailer music",
+  "menacing",
+  "powerful",
+  "relentless",
+  "modern military action film",
+  "104 BPM",
+  "pounding taiko war drums",
+  "industrial distorted percussion",
+  "distorted low brass braams",
+  "gritty driving string ostinato",
+  "heavy sub bass drops",
+  "rhythm-driven, no melody",
+  "instrumental",
+  "minor key",
+  "punchy modern mix"
+ ],
+ "negative_global_styles": [
+  "vocals",
+  "choir",
+  "singing",
+  "lyrics",
+  "spoken word",
+  "happy",
+  "uplifting",
+  "heroic theme",
+  "triumphant",
+  "soaring melody",
+  "hopeful",
+  "emotional",
+  "major key",
+  "pop",
+  "EDM",
+  "guitar solo",
+  "jazz",
+  "lo-fi"
+ ],
+ "sections": [
+  {
+   "section_name": "Dark intro",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "dark low drone",
+    "ominous",
+    "one deep distant impact",
+    "sparse",
+    "tension"
+   ],
+   "negative_local_styles": [
+    "drums groove",
+    "melody",
+    "bright"
+   ]
+  },
+  {
+   "section_name": "Predator waiting",
+   "duration_ms": 6923,
+   "lines": [],
+   "positive_local_styles": [
+    "near silence",
+    "slow heavy sub pulse like a heartbeat",
+    "menacing calm",
+    "low strings holding one note",
+    "rising riser at the very end"
+   ],
+   "negative_local_styles": [
+    "drums groove",
+    "busy",
+    "bright",
+    "melody"
+   ]
+  },
+  {
+   "section_name": "Ignition",
+   "duration_ms": 9231,
+   "lines": [],
+   "positive_local_styles": [
+    "explosive downbeat hit on the first beat",
+    "pounding war drums at full force from the first beat",
+    "aggressive low string ostinato",
+    "driving",
+    "urgent"
+   ],
+   "negative_local_styles": [
+    "quiet",
+    "soft",
+    "slow build"
+   ]
+  },
+  {
+   "section_name": "Full power",
+   "duration_ms": 11538,
+   "lines": [],
+   "positive_local_styles": [
+    "full aggressive drive",
+    "pounding drums",
+    "distorted low brass braams",
+    "relentless momentum",
+    "intensity climbing"
+   ],
+   "negative_local_styles": [
+    "quiet",
+    "breakdown",
+    "soft"
+   ]
+  },
+  {
+   "section_name": "Heavy",
+   "duration_ms": 13846,
+   "lines": [],
+   "positive_local_styles": [
+    "heavy half-time groove",
+    "huge slow drum hits",
+    "menacing",
+    "controlled power",
+    "building back up through the section"
+   ],
+   "negative_local_styles": [
+    "bright",
+    "happy"
+   ]
+  },
+  {
+   "section_name": "Finale",
+   "duration_ms": 6923,
+   "lines": [],
+   "positive_local_styles": [
+    "most aggressive moment",
+    "everything at full force",
+    "three massive braam hits",
+    "ends on one enormous final hit"
+   ],
+   "negative_local_styles": [
+    "fade out",
+    "quiet",
+    "heroic"
+   ]
+  },
+  {
+   "section_name": "Tail",
+   "duration_ms": 6924,
+   "lines": [],
+   "positive_local_styles": [
+    "the final hit rings out",
+    "deep low booms far apart",
+    "dark resolve",
+    "long reverb tail to silence"
+   ],
+   "negative_local_styles": [
+    "new theme",
+    "drums groove",
+    "melody"
+   ]
+  }
+ ]
+}

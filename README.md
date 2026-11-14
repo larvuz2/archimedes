@@ -1,6 +1,6 @@
 # Marlin — 60s concept video
 
-**Client:** Archimedes Freight, Inc. · **Production:** Phatty Acid, Inc. · **Tagline:** Speed is security.
+**Client:** Archimedes Freight, Inc. · **Production:** Phatty Acid, Inc. · **Tagline:** Detect. Isolate. Surveil.
 
 The video is built in code with [Remotion](https://www.remotion.dev) (React → MP4). Remotion is the master
 timeline: motion graphics, HUD overlays, maps, titles and the end card are built here, and 3D / stock
@@ -15,7 +15,25 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
-## Animatic v3.0 (Storyboard V5, Blender previz): current
+## Animatic v4.0 (approved new structure, cut to the score): current
+
+Review file: `review/marlin-animatic-v4.0.mp4` (24 fps, 62 shots, every cut on a beat of the 104 BPM score).
+What the client's reference film does and how v4 applies it: `docs/v4-reference-and-cut.md`.
+New clean 3D plates: `review/v4/reference/`. Audio stems (score, effects, voice, mix): `review/v4/audio/`.
+
+| Part | Where | How to rebuild |
+|---|---|---|
+| Edit | `src/v4/MarlinV4.tsx` (cut list in beats), `src/v4/timeline.ts` (beat grid), `src/v4/Map.tsx` (tactical display) | `npx remotion render src/index.ts Marlin review/marlin-animatic-v4.0.mp4 --crf=18` |
+| New 3D shots | `blender/previz.py`: `06b v1 i1 s1 f1 k1 r2 t1 10h` | `blender/render_v4.sh && blender/render_v4b.sh` |
+| Score | `scripts/generate_music_v4.py` (ElevenLabs Music, bar plan at 104 BPM) | `python3 scripts/generate_music_v4.py 3 1` |
+| Narration | `scripts/generate_vo_v4.py` (14 short lines, voice Brian) | `python3 scripts/generate_vo_v4.py` |
+| Effects | `scripts/generate_sfx_v4.py` (14 sources) + synthesized hits, pulses, pings | `python3 scripts/generate_sfx_v4.py` |
+| Mix + master | `scripts/build_audio_v4.py` (everything on the beat grid; Pedalboard master, -14 LUFS) | `/opt/venv-audio/bin/python scripts/build_audio_v4.py` |
+| Quick look | `scripts/contact_sheet.mjs` (stills at chosen frames or beats, one bundle) | `node scripts/contact_sheet.mjs out/stills k24,k36,k60` |
+
+The audio tools also need `pedalboard`. v3 is still in the project as composition `MarlinV3`.
+
+## Animatic v3.0 (Storyboard V5, Blender previz)
 
 Review file: `review/marlin-animatic-v3.0.mp4` (24 fps). Shot-by-shot check against the storyboard: `docs/v3-shot-checklist.md`.
 Clean reference clips per shot (for the video model): `review/v3/reference/`.
@@ -26,7 +44,7 @@ Clean reference clips per shot (for the video model): `review/v3/reference/`.
 | 2D shots 02, 04, 05, 08, 11, 12 | `src/v3/` (Radar, COP, end card) | part of the Remotion render |
 | Sound | `scripts/build_audio_v3.py` (all effects synthesized; score + narrator arranged and mastered) | `/opt/venv-audio/bin/python scripts/build_audio_v3.py` |
 | Sound QC | `scripts/audio_qc.py` (AudioSet classifier: flags speech/scream-like sound) | `python scripts/audio_qc.py public/audio/v3/sfx.wav public/audio/v3/music.wav` |
-| Edit | `src/v3/MarlinV3.tsx`, timings in `src/v3/timeline.ts` | `npx remotion render src/index.ts Marlin review/marlin-animatic-v3.0.mp4` |
+| Edit | `src/v3/MarlinV3.tsx`, timings in `src/v3/timeline.ts` | `npx remotion render src/index.ts MarlinV3 review/marlin-animatic-v3.0.mp4` |
 
 Blender is used as a Python module (`pip install bpy==5.3.0` in a venv); the audio tools need `torch transformers soundfile librosa scipy`.
 
