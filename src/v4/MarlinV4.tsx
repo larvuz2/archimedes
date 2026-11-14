@@ -247,11 +247,15 @@ const Slam: React.FC<{n: string; word: string}> = ({n, word}) => {
 const Tag: React.FC<{text: string}> = ({text}) => {
   const [num, ...rest] = text.split(' ');
   return (
-    <div style={{position: 'absolute', left: 110, bottom: 130, fontFamily: fonts.mono, color: colors.white, textShadow: '0 2px 18px rgba(0,0,0,0.85)'}}>
-      <div style={{width: 56, height: 3, background: colors.marlin, marginBottom: 16}} />
-      <span style={{color: colors.marlin, fontSize: 34, marginRight: 18}}>{num}</span>
-      <span style={{fontSize: 48, fontWeight: 500, letterSpacing: '0.2em'}}>{rest.join(' ')}</span>
-    </div>
+    <AbsoluteFill>
+      {/* soft shade so the tag reads over spray and glitter */}
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse 640px 250px at 330px 905px, rgba(4,8,13,0.62) 0%, rgba(4,8,13,0) 100%)'}} />
+      <div style={{position: 'absolute', left: 110, bottom: 130, fontFamily: fonts.mono, color: colors.white, textShadow: '0 2px 18px rgba(0,0,0,0.85)'}}>
+        <div style={{width: 56, height: 3, background: colors.marlin, marginBottom: 16}} />
+        <span style={{color: colors.marlin, fontSize: 34, marginRight: 18}}>{num}</span>
+        <span style={{fontSize: 48, fontWeight: 500, letterSpacing: '0.2em'}}>{rest.join(' ')}</span>
+      </div>
+    </AbsoluteFill>
   );
 };
 const Chip: React.FC<{text: string; top?: number}> = ({text, top = 150}) => (
