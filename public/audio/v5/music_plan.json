@@ -1,0 +1,232 @@
+{
+ "positive_global_styles": [
+  "aggressive dark hybrid trailer music",
+  "menacing",
+  "powerful",
+  "relentless",
+  "modern military action film",
+  "104 BPM",
+  "pounding taiko war drums",
+  "industrial distorted percussion",
+  "distorted low brass braams",
+  "gritty driving string ostinato",
+  "heavy sub bass drops",
+  "rhythm-driven, no melody",
+  "instrumental",
+  "minor key",
+  "punchy modern mix"
+ ],
+ "negative_global_styles": [
+  "vocals",
+  "choir",
+  "singing",
+  "lyrics",
+  "spoken word",
+  "happy",
+  "uplifting",
+  "heroic theme",
+  "triumphant",
+  "soaring melody",
+  "hopeful",
+  "major key",
+  "pop",
+  "EDM",
+  "guitar solo",
+  "jazz",
+  "lo-fi"
+ ],
+ "sections": [
+  {
+   "section_name": "Hard pulse",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "hard driving pulse from the very first beat",
+    "pounding low drums",
+    "urgent",
+    "gritty string ostinato",
+    "menacing"
+   ],
+   "negative_local_styles": [
+    "quiet intro",
+    "fade in",
+    "slow build",
+    "melody"
+   ]
+  },
+  {
+   "section_name": "Tightens",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "tense",
+    "tighter",
+    "ticking hi-hat pulse",
+    "filtered drums",
+    "rising tension",
+    "radar-like electronic pulse"
+   ],
+   "negative_local_styles": [
+    "melody",
+    "bright",
+    "release"
+   ]
+  },
+  {
+   "section_name": "Sinking",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "sinking",
+    "descending low strings",
+    "the rhythm falls away",
+    "losing energy",
+    "dread",
+    "drains to near silence by the end"
+   ],
+   "negative_local_styles": [
+    "drums groove",
+    "build",
+    "hits",
+    "bright"
+   ]
+  },
+  {
+   "section_name": "Silence and held tone",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "near silence",
+    "one single low held tone",
+    "suspense",
+    "a riser swells in the last two beats"
+   ],
+   "negative_local_styles": [
+    "drums",
+    "groove",
+    "melody",
+    "busy"
+   ]
+  },
+  {
+   "section_name": "Kick in",
+   "duration_ms": 11538,
+   "lines": [],
+   "positive_local_styles": [
+    "explosive downbeat hit on the first beat",
+    "full driving drums from the first beat",
+    "aggressive low string ostinato",
+    "relentless momentum",
+    "urgent",
+    "powerful"
+   ],
+   "negative_local_styles": [
+    "quiet",
+    "soft",
+    "slow build"
+   ]
+  },
+  {
+   "section_name": "Builds",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "tension build",
+    "snare roll",
+    "rising",
+    "stacking intensity",
+    "riser into a massive hit"
+   ],
+   "negative_local_styles": [
+    "release",
+    "quiet",
+    "melody"
+   ]
+  },
+  {
+   "section_name": "Full power",
+   "duration_ms": 6923,
+   "lines": [],
+   "positive_local_styles": [
+    "massive hit on the first beat",
+    "most aggressive section",
+    "pounding taiko and industrial drums",
+    "distorted brass braams",
+    "relentless",
+    "full force"
+   ],
+   "negative_local_styles": [
+    "quiet",
+    "breakdown",
+    "soft",
+    "heroic"
+   ]
+  },
+  {
+   "section_name": "Chokes",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "heavy hits that stutter and choke",
+    "the drive collapses after the first bar",
+    "stops dead",
+    "then near silence"
+   ],
+   "negative_local_styles": [
+    "groove continues",
+    "build",
+    "melody"
+   ]
+  },
+  {
+   "section_name": "Hold",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "quiet low pulse returns",
+    "controlled tension",
+    "calm power",
+    "slowly building toward the finale"
+   ],
+   "negative_local_styles": [
+    "loud",
+    "drums groove",
+    "melody",
+    "happy"
+   ]
+  },
+  {
+   "section_name": "Resolve",
+   "duration_ms": 4615,
+   "lines": [],
+   "positive_local_styles": [
+    "score resolves",
+    "three massive hits, one every two beats",
+    "huge low braams",
+    "powerful final statement"
+   ],
+   "negative_local_styles": [
+    "groove",
+    "fade out",
+    "heroic",
+    "triumphant"
+   ]
+  },
+  {
+   "section_name": "Tail",
+   "duration_ms": 4619,
+   "lines": [],
+   "positive_local_styles": [
+    "the last hit rings out",
+    "long dark reverb tail",
+    "silence"
+   ],
+   "negative_local_styles": [
+    "new theme",
+    "drums",
+    "melody",
+    "groove"
+   ]
+  }
+ ]
+}

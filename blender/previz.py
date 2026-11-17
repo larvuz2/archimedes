@@ -655,7 +655,7 @@ def build_man(name, parent, loc, yaw=0.0, lean=40.0, crouch=0.0):
     return r
 
 
-def build_gofast(name='gofast'):
+def build_gofast(name='gofast', pose='hunched'):
     """Low open go-fast: long narrow hull, low console, twin outboards, bales lashed down under straps,
     three men hunched behind the console. No lights, no markings. Local origin = waterline amidships, +X bow."""
     root = empty(name)
@@ -721,9 +721,14 @@ def build_gofast(name='gofast'):
         cyl(name + f'_drum{int(y * 10)}', 0.28, 0.85, drumm, parent=root, loc=(-5.55, y * 0.2, DECK + 0.43 + 0.0))
     # three men hunched behind the console
     men = empty(name + '_men', root)
-    build_man(name + '_helm', men, (-3.38, 0.05, DECK), yaw=0, lean=36)
-    build_man(name + '_crew1', men, (-4.55, 0.42, DECK), yaw=-6, lean=50, crouch=0.20)
-    build_man(name + '_crew2', men, (-3.98, -0.60, DECK), yaw=8, lean=46, crouch=0.26)
+    if pose == 'stopped':  # dead in the water: standing, going nowhere
+        build_man(name + '_helm', men, (-3.38, 0.05, DECK), yaw=-20, lean=8)
+        build_man(name + '_crew1', men, (-4.75, 0.45, DECK), yaw=-150, lean=14)
+        build_man(name + '_crew2', men, (-4.05, -0.62, DECK), yaw=-70, lean=20, crouch=0.05)
+    else:
+        build_man(name + '_helm', men, (-3.38, 0.05, DECK), yaw=0, lean=36)
+        build_man(name + '_crew1', men, (-4.55, 0.42, DECK), yaw=-6, lean=50, crouch=0.20)
+        build_man(name + '_crew2', men, (-3.98, -0.60, DECK), yaw=8, lean=46, crouch=0.26)
     return dict(root=root, name=name, xs=-6.0, xb=6.0, beam=2.6, length=12.0)
 
 
@@ -861,6 +866,8 @@ def activate_emitter(e):
     ps.size_random = 0.7
     em.show_instancer_for_render = False
     em.show_instancer_for_viewport = False
+    if 'gravity' in e:  # bubbles rise
+        ps.effector_weights.gravity = e['gravity']
 
 
 # ----------------------------------------------------------------------------- shots
@@ -871,6 +878,7 @@ class Shot:
     moon = dict(az=80.0, el=14.0)
     exposure = 0.0
     lens_clip = (0.2, 60000.0)
+    no_ocean = False  # underwater shots build their own world
 
     def build(self):
         raise NotImplementedError
@@ -905,13 +913,17 @@ def run_shot(shot, args):
     global HAZE_COLOR
     amb = shot.moon.get('ambient', 1.0)
     HAZE_COLOR = tuple(c * amb for c in (0.030, 0.050, 0.095))
-    setup_world(shot.moon['az'], shot.moon['el'], moon_strength=shot.moon.get('strength', 2.2), moon_disc=shot.moon.get('disc', True),
-                ambient=amb, fill=shot.moon.get('fill'))
-    wm = water_material([] if os.environ.get('PV_SIMPLEWATER') else [dict(name=v['name'], root=v['root'], xs=v['xs'], xb=v['xb'], beam=v['beam'], **v.get('wake', {})) for v in vessels],
-                        foam_attr=not os.environ.get('PV_SIMPLEWATER'))
-    oc = build_ocean(material=wm, far_material=water_material([], foam_attr=False, far=True), **shot.ocean)
-    ocean_follow(oc, scene['focus'], f0, f1)
-    if 'ocean_anim' in scene:
+    if shot.no_ocean:
+        scene['setup_world']()
+        oc = None
+    else:
+        setup_world(shot.moon['az'], shot.moon['el'], moon_strength=shot.moon.get('strength', 2.2), moon_disc=shot.moon.get('disc', True),
+                    ambient=amb, fill=shot.moon.get('fill'))
+        wm = water_material([] if os.environ.get('PV_SIMPLEWATER') else [dict(name=v['name'], root=v['root'], xs=v['xs'], xb=v['xb'], beam=v['beam'], **v.get('wake', {})) for v in vessels],
+                            foam_attr=not os.environ.get('PV_SIMPLEWATER'))
+        oc = build_ocean(material=wm, far_material=water_material([], foam_attr=False, far=True), **shot.ocean)
+        ocean_follow(oc, scene['focus'], f0, f1)
+    if 'ocean_anim' in scene and oc is not None:
         md = oc.modifiers['Ocean']
         for f in range(f0, f1 + 1):
             for k, fn in scene['ocean_anim'].items():
@@ -930,11 +942,14 @@ def run_shot(shot, args):
     for f in range(f0, f1 + 1):
         sc.frame_set(f)
         t = (f - 1) / FPS
-        dg = bpy.context.evaluated_depsgraph_get()
-        oce = oc.evaluated_get(dg)
-        mw = oce.matrix_world.copy()
-        mwi = mw.inverted()
-        h = lambda x, y: ocean_height(oce, mw, mwi, x, y)
+        if oc is None:
+            h = lambda x, y: 0.0
+        else:
+            dg = bpy.context.evaluated_depsgraph_get()
+            oce = oc.evaluated_get(dg)
+            mw = oce.matrix_world.copy()
+            mwi = mw.inverted()
+            h = lambda x, y, oce=oce, mw=mw, mwi=mwi: ocean_height(oce, mw, mwi, x, y)
         for v in vessels:
             s = v['state'](t)  # x, y, heading(rad), foil(0..1), pitch, roll (rad), dz
             hd = s.get('heading', 0.0)
@@ -956,13 +971,16 @@ def run_shot(shot, args):
                 keyed(v['prop'], f, rot=(s.get('prop_angle', t * 70.0), 0, 0))
             if v.get('sensor') is not None:
                 keyed(v['sensor'], f, rot=(0, 0, s.get('sensor_angle', t * 2 * math.pi * 0.45)))
-        for e in scene.get('emitters', []):
+        for e in scene.get('emitters', []) + scene.get('movers', []):
             loc, rot = e['place'](t, state, f)
             loc = (loc[0], loc[1], h(loc[0], loc[1]) + loc[2]) if e.get('on_sea', True) else loc
             keyed(e['ob'], f, loc, rot)
+        for d in scene.get('deformers', []):
+            d.setdefault('frames', {})[f] = d['fn'](t, state, f, h)
         cpos, ctgt, lens, roll = scene['camera'](t, state, f)
-        floor = h(cpos[0], cpos[1]) + scene.get('cam_clearance', 0.35)
-        cpos = (cpos[0], cpos[1], max(cpos[2], floor))
+        if oc is not None:
+            floor = h(cpos[0], cpos[1]) + scene.get('cam_clearance', 0.35)
+            cpos = (cpos[0], cpos[1], max(cpos[2], floor))
         keyed(cam, f, cpos, look_rotation(cpos, ctgt, roll))
         cam_data.lens = lens
         cam_data.keyframe_insert('lens', frame=f)
@@ -972,10 +990,12 @@ def run_shot(shot, args):
                 if node is not None:
                     node.outputs[0].default_value = fn(t)
                     node.outputs[0].keyframe_insert('default_value', frame=f)
-    for ob in [v['root'] for v in vessels] + [cam] + [e['ob'] for e in scene.get('emitters', [])]:
+    for ob in [v['root'] for v in vessels] + [cam] + [e['ob'] for e in scene.get('emitters', []) + scene.get('movers', [])]:
         for fc in _fcurves(ob):
             for kp in fc.keyframe_points:
                 kp.interpolation = 'LINEAR'
+    for d in scene.get('deformers', []):
+        bake_shape_keys(d['ob'], d['frames'])
     if not os.environ.get('PV_NOPART'):
         for e in scene.get('emitters', []):
             activate_emitter(e)
@@ -1619,7 +1639,645 @@ class ShotIsolate(Shot):
         return dict(vessels=vessels, emitters=ems, camera=camera, focus=lambda t: (VG * t + 10.0, 0.0), cam_clearance=1.0, tracks=tracks)
 
 
-SHOTS = {s.id: s for s in (Shot01, Shot03, Shot06, Shot07, Shot09, Shot10, Shot10H, Shot06B, ShotVector, ShotSensor, ShotFan, ShotStrut, ShotTop, ShotFront, ShotIsolate)}
+# ============================================================================= v5 · Storyboard V7: the stop
+VG5 = 30 * KT  # the go-fast, flat out
+
+
+def catmull(ts, vs, t):
+    """Smooth curve through the points (ts, vs) (cubic Hermite, Catmull-Rom tangents); flat beyond the ends."""
+    if t <= ts[0]:
+        return vs[0]
+    if t >= ts[-1]:
+        return vs[-1]
+    i = max(j for j in range(len(ts) - 1) if ts[j] <= t)
+    t0, t1, p0, p1 = ts[i], ts[i + 1], vs[i], vs[i + 1]
+    m0 = (vs[i + 1] - vs[i - 1]) / (ts[i + 1] - ts[i - 1]) if i > 0 else (p1 - p0) / (t1 - t0)
+    m1 = (vs[i + 2] - vs[i]) / (ts[i + 2] - ts[i]) if i + 2 < len(ts) else (p1 - p0) / (t1 - t0)
+    hh, u = t1 - t0, (t - t0) / (t1 - t0)
+    return ((2 * u ** 3 - 3 * u ** 2 + 1) * p0 + (u ** 3 - 2 * u ** 2 + u) * hh * m0 + (-2 * u ** 3 + 3 * u ** 2) * p1 + (u ** 3 - u ** 2) * hh * m1)
+
+
+def path_heading(fx, fy, t, dt=1 / 48):
+    return math.atan2(fy(t + dt) - fy(t - dt), fx(t + dt) - fx(t - dt))
+
+
+def bake_shape_keys(ob, frames):
+    """Per-frame vertex positions -> one shape key per frame, keyed 0/1/0 (linear, so motion blur interpolates)."""
+    ob.shape_key_add(name='Basis', from_mix=False)
+    for f in sorted(frames):
+        sk = ob.shape_key_add(name=f'f{f:04d}', from_mix=False)
+        sk.data.foreach_set('co', [c for v in frames[f] for c in v])
+        for ff, val in ((f - 1, 0.0), (f, 1.0), (f + 1, 0.0)):
+            sk.value = val
+            sk.keyframe_insert('value', frame=ff)
+    for fc in _fcurves(ob.data.shape_keys):
+        for kp in fc.keyframe_points:
+            kp.interpolation = 'LINEAR'
+
+
+def net_materials():
+    """Floated head rope of the entanglement net: pale so it reads at night (no colour coding)."""
+    return (M('net_rope', (0.46, 0.46, 0.43), rough=0.85, ir=0.3, emit=0.10),
+            M('net_float', (0.80, 0.77, 0.64), rough=0.5, ir=0.35, emit=0.32))
+
+
+_SPH = None
+
+
+def _sphere_template():
+    global _SPH
+    if _SPH is None:
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=5, radius=1.0)
+        bm.verts.index_update()
+        _SPH = ([tuple(v.co) for v in bm.verts], [[v.index for v in f.verts] for f in bm.faces])
+        bm.free()
+    return _SPH
+
+
+def rope_mesh(name, n, ring=6, rope_r=0.07, float_r=0.26, float_every=1):
+    """A net leg as one mesh: a rope tube through n points plus a float at every point. Its shape is set per
+    frame by rope_coords() and baked to shape keys."""
+    rope_m, float_m = net_materials()
+    sv, sf = _sphere_template()
+    verts, faces, mats = [], [], []
+    for i in range(n):
+        verts.extend([(i * 0.5, 0.0, k * 0.01) for k in range(ring)])
+    for i in range(n - 1):
+        for k in range(ring):
+            a, b = i * ring + k, i * ring + (k + 1) % ring
+            faces.append((a, b, b + ring, a + ring))
+            mats.append(0)
+    fidx = list(range(0, n, float_every))
+    for i in fidx:
+        off = len(verts)
+        verts.extend([(i * 0.5 + v[0], v[1], v[2]) for v in sv])
+        for fc in sf:
+            faces.append(tuple(off + x for x in fc))
+            mats.append(1)
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, [], faces)
+    me.materials.append(rope_m)
+    me.materials.append(float_m)
+    me.polygons.foreach_set('material_index', mats)
+    me.polygons.foreach_set('use_smooth', [True] * len(faces))
+    ob = link(bpy.data.objects.new(name, me))
+    ob.visible_shadow = False
+    return ob, dict(n=n, ring=ring, fidx=fidx, rope_r=rope_r, float_r=float_r, sv=sv)
+
+
+def rope_coords(L, pts, scale=None):
+    n, ring, out = L['n'], L['ring'], []
+    up = Vector((0, 0, 1))
+    for i in range(n):
+        p = Vector(pts[i])
+        tng = Vector(pts[min(i + 1, n - 1)]) - Vector(pts[max(i - 1, 0)])
+        tng = tng.normalized() if tng.length > 1e-6 else Vector((1, 0, 0))
+        nrm = tng.cross(up)
+        nrm = nrm.normalized() if nrm.length > 1e-6 else Vector((0, 1, 0))
+        bn = nrm.cross(tng)
+        r = L['rope_r'] * (scale[i] if scale else 1.0)
+        for k in range(ring):
+            a = 2 * math.pi * k / ring
+            out.append(tuple(p + r * (math.cos(a) * nrm + math.sin(a) * bn)))
+    for i in L['fidx']:
+        p = Vector(pts[i])
+        s = L['float_r'] * (scale[i] if scale else 1.0)
+        for v in L['sv']:
+            out.append((p.x + v[0] * s * 1.3, p.y + v[1] * s * 1.3, p.z + v[2] * s * 0.7 + s * 0.12))
+    return out
+
+
+def add_launcher(m):
+    """Two short net-launcher tubes on the Marlin's after body, angled aft and outboard (notional)."""
+    dark = M('marlin_dark', (0.07, 0.075, 0.08), rough=0.55, ir=0.62)
+    for s in (1, -1):
+        piv = empty(m['name'] + f'_lpiv{s}', m['root'], (-0.55, s * 0.70, 0.66), (0, rad(-24), rad(180 - s * 24)))
+        box(m['name'] + f'_launcher{s}', (0.80, 0.24, 0.24), dark, parent=piv, loc=(0.25, 0, 0), bevel=0.04)
+    return m
+
+
+def build_partner(name='partner'):
+    """Generic patrol boat (asset type only): grey, no markings, no agency colours, standard navigation lights."""
+    root = empty(name)
+    root.rotation_mode = 'ZYX'
+    hullm = M('pt_hull', (0.30, 0.32, 0.34), rough=0.5, ir=0.5)
+    supm = M('pt_super', (0.42, 0.44, 0.46), rough=0.5, ir=0.45)
+    dark = M('pt_dark', (0.03, 0.035, 0.04), rough=0.3, ir=0.6)
+    stations = [(-13.0, 2.6, 2.0, -1.3), (-6.0, 2.9, 2.1, -1.5), (2.0, 2.85, 2.3, -1.5), (7.0, 2.2, 2.6, -1.2), (11.0, 1.1, 2.9, -0.5), (13.2, 0.06, 3.1, 1.6)]
+    bm = bmesh.new()
+    rings = []
+    for x, b, zs, zk in stations:
+        half = [(0.0, zk), (0.85 * b, zk + (zs - zk) * 0.35), (b, zs), (0.0, zs)]
+        rings.append([bm.verts.new((x, y, z)) for y, z in half] + [bm.verts.new((x, -y, z)) for y, z in reversed(half[1:-1])])
+    for a, b_ in zip(rings, rings[1:]):
+        for i in range(len(a)):
+            bm.faces.new((a[i], a[(i + 1) % len(a)], b_[(i + 1) % len(a)], b_[i]))
+    bm.faces.new(rings[0])
+    bm.faces.new(rings[-1])
+    mesh_obj(name + '_hull', bm, hullm, parent=root)
+    box(name + '_house', (9.0, 4.4, 2.3), supm, parent=root, loc=(-0.5, 0, 3.25), bevel=0.15)
+    box(name + '_bridge', (4.2, 4.0, 1.6), supm, parent=root, loc=(1.6, 0, 5.1), bevel=0.12)
+    box(name + '_windows', (0.1, 3.8, 0.55), dark, parent=root, loc=(3.72, 0, 5.3))
+    cyl(name + '_mast', 0.12, 4.2, supm, parent=root, loc=(0.4, 0, 7.6))
+    box(name + '_radar', (0.35, 2.4, 0.18), supm, parent=root, loc=(0.4, 0, 8.6))
+    for nm, col, loc in (('mast', (1.0, 0.97, 0.9), (0.4, 0, 9.75)), ('port', (1.0, 0.08, 0.05), (2.0, 2.15, 5.6)), ('stbd', (0.05, 1.0, 0.25), (2.0, -2.15, 5.6))):
+        sphere(name + f'_light_{nm}', 0.16, M(f'pt_light_{nm}', col, emit=40.0, ir=1.0), seg=10, parent=root, loc=loc)
+    return dict(root=root, name=name, xs=-13.0, xb=13.2, beam=5.8, length=26.4)
+
+
+def fog_all_materials(color, d0, d1, kmax=0.96):
+    """Underwater look: every surface fades to the water colour with distance from the camera."""
+    for m in bpy.data.materials:
+        if not m.node_tree or m.name.startswith('uw_surface'):
+            continue
+        nt = NT(m.node_tree)
+        out = next((n for n in nt.n if n.bl_idname == 'ShaderNodeOutputMaterial'), None)
+        if out is None or not out.inputs['Surface'].links:
+            continue
+        src = out.inputs['Surface'].links[0].from_socket
+        cd = nt.node('ShaderNodeCameraData')
+        em = nt.node('ShaderNodeEmission')
+        em.inputs['Color'].default_value = (*color, 1)
+        mix = nt.node('ShaderNodeMixShader')
+        nt.link(nt.math('MULTIPLY', nt.sstep(cd.outputs['View Distance'], d0, d1), kmax), mix.inputs['Fac'])
+        nt.link(src, mix.inputs[1])
+        nt.link(em.outputs[0], mix.inputs[2])
+        nt.link(mix.outputs[0], out.inputs['Surface'])
+
+
+def marlin_plume(name, frames=(1, 400), count=6000, size=0.07):
+    e = spray_emitter(f'plume_{name}', frames, count, life=0.7, vel_normal=5.5, inherit=0.86, size=size, rand=1.6, quad=(0.5, 0.35))
+
+    def place(t, state, f):
+        st = state[name][f]
+        c, sn = math.cos(st['heading']), math.sin(st['heading'])
+        return (st['x'] + 0.55 * c, st['y'] + 0.55 * sn, 0.1), (0, rad(-35), st['heading'])
+    e['place'] = place
+    return e
+
+
+def flank_marlin(name='marlin2', rel=(-16.0, -19.0), v=VG5):
+    """The second Marlin holding hull-borne on the flank, pacing the boat."""
+    m = build_marlin(name)
+    m['state'] = lambda t: dict(x=v * t + rel[0], y=rel[1], heading=0.0, follow=0.9, foil=0.0, pitch=rad(1.0), roll=rad(1.0) * wobble(t, 12), prop_angle=t * 42.0)
+    m['wake'] = dict(strength=0.9, w0=1.1, side=1.0, wake_len=70.0)
+    return m
+
+
+OVERHEAD = dict(ocean=dict(wave_scale=0.9, choppiness=1.05, wind=9.5, repeat=3, seed=5),
+                moon=dict(az=55.0, el=16.0, strength=2.6, disc=False, ambient=1.35, fill=(230.0, 50.0, 0.5)), exposure=1.1)
+
+
+class ShotPass(Shot):
+    """v5 · 09 Pass (0:34-0:38). Overhead drone. The lead Marlin lifts back onto its foils, passes the go-fast wide
+    and cuts in ahead on the same heading; the two boats end up on the same line, Marlin clearly ahead.
+    The flank Marlin holds."""
+    id = 'p1'
+    duration = 4.0
+    ocean, moon, exposure = OVERHEAD['ocean'], OVERHEAD['moon'], OVERHEAD['exposure']
+    LT = (0.0, 0.9, 2.3, 3.4, 4.3)
+    LX = (-12.0, -9.0, 38.0, 68.0, 77.0)
+    LY = (34.0, 33.0, 28.0, 6.0, 0.0)
+
+    def build(self):
+        gf = build_gofast()
+        gofast_sheets(gf)
+        gf['state'] = gofast_state(v=VG5)
+        gf['wake'] = dict(strength=1.0, w0=1.25, side=1.0, wake_len=150.0)
+        lead = add_launcher(build_marlin('marlin'))
+        fx = lambda t: VG5 * t + catmull(self.LT, self.LX, t)
+        fy = lambda t: catmull(self.LT, self.LY, t)
+
+        def st(t):
+            foil = smooth(ramp(t, 0.1, 1.0))
+            rate = (path_heading(fx, fy, t + 0.1) - path_heading(fx, fy, t - 0.1)) / 0.2
+            return dict(x=fx(t), y=fy(t), heading=path_heading(fx, fy, t), follow=1.0 - foil, foil=foil,
+                        pitch=rad(0.5) * foil - rad(2.0) * math.sin(math.pi * ramp(t, 0.1, 1.0)),
+                        roll=clamp(-rate * 0.16, -rad(13), rad(13)) * foil, prop_angle=t * lerp(42.0, 95.0, ramp(t, 0.0, 0.7)))
+        lead['state'] = st
+        lead['wake'] = dict(strength=1.0, w0=1.1, side=1.0, wake_len=38.0)
+        flank = flank_marlin()
+        wake_anim = {'wake_w0_marlin': lambda t: lerp(1.1, 0.4, smooth(ramp(t, 0.2, 1.0))),
+                     'wake_side_marlin': lambda t: 1.0 - smooth(ramp(t, 0.2, 0.9)),
+                    'wake_strength_marlin': lambda t: 1.0 - 0.45 * smooth(ramp(t, 1.6, 2.8))}
+        ems = gofast_spray(density=0.8) + [marlin_plume('marlin', frames=(int(0.45 * FPS), 400))]
+
+        def camera(t, state, f):
+            c = (VG5 * t + lerp(14.0, 36.0, smooth(t / self.duration)), 9.0, 0.0)
+            return (c[0], c[1] - 24.0, 84.0), c, 24.0, rad(0.4) * wobble(t, 9, (0.3, 0.7, 1.5))
+        tracks = dict(toi=lambda t, s_, f: (s_['gofast'][f]['x'], 0, 0.95),
+                      marlin=lambda t, s_, f: (s_['marlin'][f]['x'], s_['marlin'][f]['y'], s_['marlin'][f]['z'] + 1.2),
+                      marlin2=lambda t, s_, f: (s_['marlin2'][f]['x'], s_['marlin2'][f]['y'], s_['marlin2'][f]['z'] + 1.2))
+        return dict(vessels=[gf, lead, flank], emitters=ems, camera=camera, focus=lambda t: (VG5 * t + 25.0, 0.0), cam_clearance=1.0,
+                    wake_anim=wake_anim, tracks=tracks)
+
+
+class ShotNet(Shot):
+    """v5 · 10 Net away (0:38-0:42). Overhead. Running directly ahead on the same line, the lead Marlin launches the
+    net back from its stern: two legs fly out and land in a V, the point on the track ahead of the boat, the ends past
+    its bow on both sides. Marlin keeps running and peels off."""
+    id = 'n1'
+    duration = 4.0
+    ocean, moon, exposure = OVERHEAD['ocean'], OVERHEAD['moon'], OVERHEAD['exposure']
+    T_FIRE = 0.9
+    LT = (0.0, 0.9, 1.5, 2.6, 4.3)
+    LX = (74.0, 75.0, 79.0, 93.0, 122.0)
+    LY = (0.0, 0.0, 2.5, 15.0, 44.0)
+    N = 34
+
+    def build(self):
+        gf = build_gofast()
+        gofast_sheets(gf)
+        gf['state'] = gofast_state(v=VG5)
+        gf['wake'] = dict(strength=1.0, w0=1.25, side=1.0, wake_len=150.0)
+        lead = add_launcher(build_marlin('marlin'))
+        fx = lambda t: VG5 * t + catmull(self.LT, self.LX, t)
+        fy = lambda t: catmull(self.LT, self.LY, t)
+
+        def st(t):
+            rate = (path_heading(fx, fy, t + 0.1) - path_heading(fx, fy, t - 0.1)) / 0.2
+            return dict(x=fx(t), y=fy(t), heading=path_heading(fx, fy, t), follow=0.0, foil=1.0, pitch=rad(0.5),
+                        roll=clamp(-rate * 0.16, -rad(13), rad(13)), dz=0.02 * wobble(t, 3), prop_angle=t * 95.0)
+        lead['state'] = st
+        lead['wake'] = dict(strength=1.0, w0=0.3, side=0.0, wake_len=34.0)
+        flank = flank_marlin()
+        TF = self.T_FIRE
+        A = (fx(TF) - 2.4, 0.0)
+        E = {1: (A[0] - 50.0, 13.0), -1: (A[0] - 50.0, -13.0)}
+        self.A, self.E = A, E
+        deformers, ems = [], gofast_spray(density=0.8) + [marlin_plume('marlin')]
+        for s in (1, -1):
+            ob, L = rope_mesh(f'net_leg{s}', self.N)
+
+            def fn(t, state, f, h, s=s, L=L):
+                lx, ly = fx(TF) - 0.6, s * 0.75  # the launcher at the moment of firing
+                pts, sc = [], []
+                for i in range(self.N):
+                    u = i / (self.N - 1)
+                    qx, qy = A[0] + (E[s][0] - A[0]) * u, A[1] + (E[s][1] - A[1]) * u
+                    if t < TF:
+                        pts.append((fx(t) - 0.6, ly, 0.9))
+                        sc.append(0.0)
+                        continue
+                    k = clamp((t - TF) / (0.28 + 1.0 * u))
+                    e_ = 1 - (1 - k) ** 2
+                    x, y = lerp(lx, qx, e_), lerp(ly, qy, e_)
+                    zw = h(x, y) + 0.04
+                    z = lerp(0.9, zw, k) + 4 * (1.0 + 4.0 * u) * k * (1 - k)
+                    pts.append((x, y, z))
+                    sc.append(min(1.0, 0.25 + (t - TF) / 0.15))
+                return rope_coords(L, pts, sc)
+            deformers.append(dict(ob=ob, fn=fn))
+            e = spray_emitter(f'netpuff{s}', (int(TF * FPS) + 1, int(TF * FPS) + 4), 1600, life=0.45, vel_normal=6.5, inherit=0.5, size=0.09, rand=1.5, quad=(0.4, 0.4))
+            e['on_sea'] = False
+            e['place'] = (lambda t, state, f, s=s: ((state['marlin'][f]['x'] - 0.9, state['marlin'][f]['y'] + s * 0.8, state['marlin'][f]['z'] + 0.9),
+                                                    (rad(-s * 45), rad(-60), 0.0)))
+            ems.append(e)
+            # the net slaps the water: a line of splashes along each leg as it lands
+            for j, u in enumerate((0.25, 0.55, 0.85)):
+                tl = TF + 0.28 + 1.0 * u
+                e = spray_emitter(f'netslap{s}{j}', (int(tl * FPS) + 1, int(tl * FPS) + 3), 900, life=0.5, vel_normal=3.0, inherit=0.0, size=0.07, rand=1.8, quad=(3.0, 0.5))
+                e['place'] = (lambda t, state, f, s=s, u=u: ((A[0] + (E[s][0] - A[0]) * u, A[1] + (E[s][1] - A[1]) * u, 0.05),
+                                                             (0.0, 0.0, math.atan2(E[s][1] - A[1], E[s][0] - A[0]))))
+                ems.append(e)
+
+        def camera(t, state, f):
+            c = (lerp(44.0, 72.0, smooth(t / self.duration)), 5.0, 0.0)
+            return (c[0], c[1] - 24.0, 86.0), c, 24.0, rad(0.4) * wobble(t, 9, (0.3, 0.7, 1.5))
+        tracks = dict(bow=lambda t, s_, f: (s_['gofast'][f]['x'] + 6.0, 0, 0.6), toi=lambda t, s_, f: (s_['gofast'][f]['x'], 0, 0.95),
+                      apex=lambda t, s_, f: (A[0], A[1], 0.0), endL=lambda t, s_, f: (E[1][0], E[1][1], 0.0), endR=lambda t, s_, f: (E[-1][0], E[-1][1], 0.0),
+                      marlin=lambda t, s_, f: (s_['marlin'][f]['x'], s_['marlin'][f]['y'], s_['marlin'][f]['z'] + 1.2),
+                      marlin2=lambda t, s_, f: (s_['marlin2'][f]['x'], s_['marlin2'][f]['y'], s_['marlin2'][f]['z'] + 1.2))
+        return dict(vessels=[gf, lead, flank], emitters=ems, deformers=deformers, camera=camera, focus=lambda t: (lerp(44.0, 72.0, smooth(t / self.duration)), 0.0),
+                    cam_clearance=1.0, tracks=tracks)
+
+
+class Fouled:
+    """Shared by 11 and 12: the V-net legs lying on the water and the go-fast's hard swerve into the starboard leg.
+    The stern crosses the leg, the props foul, and the boat bogs down and slews to a stop."""
+    A = (40.0, 0.0)
+    E = {1: (-20.0, 14.0), -1: (-20.0, -14.0)}
+    N = 34
+    DT = 1 / 240
+
+    def __init__(self):
+        self.t_foul = None
+        self._integrate(None)
+        ax, ay = self.A
+        ex, ey = self.E[-1]
+        side = lambda px, py: (ex - ax) * (py - ay) - (ey - ay) * (px - ax)
+        prev = None
+        for i, (x, y, hd) in enumerate(self.path):
+            t = i * self.DT
+            sx, sy = x - 6.3 * math.cos(hd), y - 6.3 * math.sin(hd)
+            sd = side(sx, sy)
+            if prev is not None and t > 0.3 and (sd > 0) != (prev > 0):
+                self.t_foul = t
+                break
+            prev = sd
+        assert self.t_foul is not None, 'the boat never crosses the leg'
+        self._integrate(self.t_foul)
+        # where along the leg the stern caught it
+        x, y, hd = self.pose(self.t_foul)
+        sx, sy = x - 6.3 * math.cos(hd), y - 6.3 * math.sin(hd)
+        self.s_hit = clamp(((sx - ax) * (ex - ax) + (sy - ay) * (ey - ay)) / ((ex - ax) ** 2 + (ey - ay) ** 2))
+
+    def hd(self, t, tf):
+        a = -rad(40) * smooth(ramp(t, 0.08, 0.6))
+        return a - (rad(30) * smooth(ramp(t, tf, tf + 1.7)) if tf is not None else 0.0)
+
+    def speed(self, t, tf):
+        return VG5 if tf is None or t < tf else VG5 * math.exp(-(t - tf) / 0.5)
+
+    def _integrate(self, tf, T=8.0):
+        x = y = 0.0
+        self.path = []
+        for i in range(int(T / self.DT) + 2):
+            t = i * self.DT
+            hd = self.hd(t, tf)
+            self.path.append((x, y, hd))
+            v = self.speed(t, tf)
+            x += v * math.cos(hd) * self.DT
+            y += v * math.sin(hd) * self.DT
+
+    def pose(self, t):
+        return self.path[min(len(self.path) - 1, max(0, int(round(t / self.DT))))]
+
+    def stern(self, t):
+        x, y, hd = self.pose(t)
+        return x - 6.5 * math.cos(hd), y - 6.5 * math.sin(hd)
+
+    def leg_points(self, s, t, h):
+        """Float positions of one leg at time t: lying on the sea, slipping under the hull where the boat runs
+        over it, and (starboard leg) dragged along by the fouled props."""
+        ax, ay = self.A
+        ex, ey = self.E[s]
+        x, y, hd = self.pose(t)
+        c, sn = math.cos(hd), math.sin(hd)
+        stx, sty = self.stern(t)
+        pull = smooth(ramp(t, self.t_foul, self.t_foul + 0.12)) if s == -1 else 0.0
+        pts = []
+        for i in range(self.N):
+            u = i / (self.N - 1)
+            px, py = ax + (ex - ax) * u, ay + (ey - ay) * u
+            if pull > 0:
+                w = math.exp(-((u - self.s_hit) / 0.07) ** 2) * pull
+                px, py = lerp(px, stx, w), lerp(py, sty, w)
+            lx, ly = (px - x) * c + (py - y) * sn, -(px - x) * sn + (py - y) * c  # in the boat's frame
+            under = smooth(ramp(1.6 - abs(ly), 0.0, 0.3)) * smooth(ramp(6.3 - abs(lx), 0.0, 0.5))
+            pts.append((px, py, h(px, py) + 0.04 - 0.65 * under))
+        return pts
+
+
+class ShotFouled(Shot):
+    """v5 · 11 Fouled (0:42-0:46). Wide and low from the starboard side. The go-fast swerves hard to dodge, too
+    late: it runs over a leg, the props ingest the net, the engines bog, the bow drops and it slews to a stop."""
+    id = 'x1'
+    duration = 4.0
+    ocean = dict(wave_scale=0.9, choppiness=1.05, wind=9.5, repeat=3, seed=5)
+    moon = dict(az=100.0, el=13.0, strength=2.5, disc=False, ambient=1.2, fill=(-60.0, 35.0, 0.5))
+    exposure = 1.0
+
+    def build(self):
+        W = Fouled()
+        tf = W.t_foul
+        gf = build_gofast()
+        gofast_sheets(gf)
+        base = gofast_state(v=VG5)
+
+        def st(t):
+            x, y, hd = W.pose(t)
+            b = base(t)
+            k = smooth(ramp(t, tf, tf + 0.55))  # coming off the plane
+            drop = math.sin(math.pi * ramp(t, tf, tf + 0.9))
+            turn = math.sin(math.pi * ramp(t, 0.1, tf + 0.3))
+            return dict(x=x, y=y, heading=hd, follow=lerp(0.45, 1.0, k), dz=lerp(b['dz'], -0.06, k),
+                        pitch=lerp(b['pitch'], 0.0, k) - rad(3.2) * drop, roll=lerp(b['roll'], 0.0, k) + rad(9) * turn * (1 - k) + rad(3) * drop * math.sin(9 * (t - tf)))
+        gf['state'] = st
+        gf['wake'] = dict(strength=1.0, w0=1.25, side=1.0, wake_len=110.0)
+        wake_anim = {'wake_strength_gofast': lambda t: lerp(1.0, 0.35, smooth(ramp(t, tf, tf + 2.2))),
+                     'wake_side_gofast': lambda t: 1.0 - smooth(ramp(t, tf, tf + 0.9)),
+                     'sheet_strength_gofast': lambda t: 1.0 - smooth(ramp(t, tf - 0.05, tf + 0.6))}
+        ems = gofast_spray(frames=(1, int(tf * FPS) + 3), density=1.0)
+        # the props chew the net: a burst of white water at the stern
+        e = spray_emitter('foul_burst', (int(tf * FPS) + 1, int(tf * FPS) + 14), 5000, life=0.6, vel_normal=4.0, inherit=0.3, size=0.07, rand=2.0, quad=(1.2, 1.4))
+        e['place'] = lambda t, state, f: ((W.stern(t)[0], W.stern(t)[1], 0.1), (0, rad(-30), W.pose(t)[2]))
+        ems.append(e)
+        deformers = []
+        for s in (1, -1):
+            ob, L = rope_mesh(f'net_leg{s}', W.N)
+            deformers.append(dict(ob=ob, fn=lambda t, state, f, h, s=s, L=L: rope_coords(L, W.leg_points(s, t, h))))
+
+        def camera(t, state, f):
+            k = smooth(t / self.duration)
+            pos = (lerp(6.0, 12.0, k) + 0.05 * wobble(t, 1), -52.0, 15.0 + 0.05 * wobble(t, 2))
+            return pos, (lerp(9.0, 15.0, k), -4.0, 0.0), 28.0, rad(0.3) * wobble(t, 9, (0.3, 0.7, 1.5))
+        tracks = dict(toi=lambda t, s_, f: (s_['gofast'][f]['x'], s_['gofast'][f]['y'], 1.0),
+                      stern=lambda t, s_, f: (W.stern(t)[0], W.stern(t)[1], 0.3))
+        self.t_foul = tf
+        print('t_foul', round(tf, 3), 's_hit', round(W.s_hit, 3), 'final pose', [round(v, 2) for v in W.pose(4.0)], flush=True)
+        return dict(vessels=[gf], emitters=ems, deformers=deformers, camera=camera, focus=lambda t: (W.pose(t)[0], W.pose(t)[1]),
+                    cam_clearance=1.0, wake_anim=wake_anim, tracks=tracks)
+
+
+class ShotHold(Shot):
+    """v5 · 12 Hold (0:46-0:50). Wide and low. The go-fast sits dead in the water, the men on deck going nowhere,
+    the net fouled in its props. Both Marlins hold hull-borne at standoff, cameras on it. On the horizon the
+    partner's boat is closing."""
+    id = 'h1'
+    duration = 4.0
+    ocean = dict(wave_scale=0.85, choppiness=0.95, wind=9.0, repeat=3, seed=5)
+    moon = dict(az=38.0, el=12.0, strength=2.4, disc=False, ambient=1.2, fill=(-120.0, 35.0, 0.4))
+    exposure = 0.95
+    LATE = 30.0  # long after the stop: the net lies where it was dragged
+
+    def build(self):
+        W = Fouled()
+        bx, by, bhd = W.pose(self.LATE)
+        gf = build_gofast(pose='stopped')
+        gf['state'] = lambda t: dict(x=bx, y=by, heading=bhd + rad(1.5) * wobble(t, 4, (0.13, 0.21, 0.37)), follow=1.0, dz=-0.07,
+                                     pitch=0.0, roll=rad(1.5) * wobble(t, 6, (0.4, 0.7, 1.1)))
+        gf['wake'] = dict(strength=0.0, w0=1.3, side=0.25, wake_len=10.0)
+        R = lambda dx, dy: (bx + dx, by + dy)
+        lead = add_launcher(build_marlin('marlin'))
+        lp = R(-30.0, -12.0)
+        lhd = math.atan2(by - lp[1], bx - lp[0])
+        lead['state'] = lambda t: dict(x=lp[0], y=lp[1], heading=lhd + rad(1.2) * wobble(t, 2, (0.15, 0.27, 0.4)), follow=1.0, foil=0.0,
+                                       roll=rad(1.2) * wobble(t, 3, (0.3, 0.6, 1.0)), prop_angle=t * 6.0, sensor_angle=0.0)
+        lead['wake'] = dict(strength=0.0, w0=1.0, side=0.15)
+        fl = build_marlin('marlin2')
+        fp = R(26.0, -16.0)
+        fhd = math.atan2(by - fp[1], bx - fp[0])
+        fl['state'] = lambda t: dict(x=fp[0], y=fp[1], heading=fhd, follow=1.0, foil=0.0, roll=rad(1.2) * wobble(t, 8), prop_angle=t * 6.0, sensor_angle=0.0)
+        fl['wake'] = dict(strength=0.0, w0=1.0, side=0.15)
+        pt = build_partner()
+        cam0 = R(-46.0, -30.0)
+        p0 = (cam0[0] + 195.0 * math.cos(rad(22)), cam0[1] + 195.0 * math.sin(rad(22)))
+        dvx, dvy = bx - p0[0], by - p0[1]
+        dl = math.hypot(dvx, dvy)
+        VP = 9.0
+        pt['state'] = lambda t: dict(x=p0[0] + dvx / dl * VP * t, y=p0[1] + dvy / dl * VP * t, heading=math.atan2(dvy, dvx), follow=0.5, pitch=rad(1.5),
+                                     roll=rad(0.8) * wobble(t, 5))
+        pt['wake'] = dict(strength=1.0, w0=1.8, side=1.0, wake_len=70.0)
+        e = spray_emitter('partner_bow', (1, 400), 1500, life=0.5, vel_normal=3.0, inherit=0.8, size=0.12, rand=1.5, quad=(1.5, 0.6))
+        e['place'] = lambda t, state, f: ((state['partner'][f]['x'] + dvx / dl * 11.0, state['partner'][f]['y'] + dvy / dl * 11.0, 0.3), (0, rad(-20), math.atan2(dvy, dvx) + math.pi))
+        deformers = []
+        for s in (1, -1):
+            ob, L = rope_mesh(f'net_leg{s}', W.N)
+            deformers.append(dict(ob=ob, fn=lambda t, state, f, h, s=s, L=L: rope_coords(L, W.leg_points(s, self.LATE, h))))
+
+        def camera(t, state, f):
+            k = t / self.duration
+            pos = (cam0[0] + lerp(0.0, 1.2, k), cam0[1] + lerp(0.0, 0.6, k), 2.6 + 0.04 * wobble(t, 2))
+            return pos, (bx + 6.0, by + 4.0, 1.0), 35.0, rad(0.3) * wobble(t, 9, (0.2, 0.5, 0.9))
+
+        def mast(t, s_, f):
+            st = s_['marlin'][f]
+            return (st['x'] - 1.75 * math.cos(st['heading']), st['y'] - 1.75 * math.sin(st['heading']), st['z'] + 3.35)
+        tracks = dict(toi=lambda t, s_, f: (bx, by, 1.0), mast=mast,
+                      marlin2=lambda t, s_, f: (s_['marlin2'][f]['x'], s_['marlin2'][f]['y'], s_['marlin2'][f]['z'] + 1.5),
+                      partner=lambda t, s_, f: (s_['partner'][f]['x'], s_['partner'][f]['y'], 4.0))
+        return dict(vessels=[gf, lead, fl, pt], emitters=[e], deformers=deformers, camera=camera, focus=lambda t: (bx + 40.0, by + 15.0),
+                    cam_clearance=1.0, tracks=tracks)
+
+
+class ShotProp(Shot):
+    """v5 · 11 Fouled, underwater cutaway. Under the stern: the net streams in, the props ingest it and it wraps
+    the lower units; the props slow and stop."""
+    id = 'u1'
+    duration = 2.0
+    no_ocean = True
+    moon = dict(az=60.0, el=70.0, ambient=1.0)
+    exposure = 1.5
+    FOG = (0.006, 0.024, 0.032)
+
+    def setup_world(self):
+        sc = bpy.context.scene
+        w = bpy.data.worlds.new('underwater')
+        sc.world = w
+        w.use_nodes = True
+        nt = NT(w.node_tree)
+        nt.n.clear()
+        out = nt.node('ShaderNodeOutputWorld')
+        bg = nt.node('ShaderNodeBackground')
+        bg.inputs['Color'].default_value = (*self.FOG, 1)
+        bg.inputs['Strength'].default_value = 1.0
+        nt.link(bg.outputs[0], out.inputs['Surface'])
+        ld = bpy.data.lights.new('moon_through', 'SUN')
+        ld.energy = 1.4
+        ld.color = (0.55, 0.85, 0.9)
+        ld.angle = rad(12)
+        lo = link(bpy.data.objects.new('moon_through', ld))
+        lo.rotation_euler = (rad(20), rad(-10), 0)
+
+    def build(self):
+        vr = lambda t: 5.0 * (1.0 - smooth(ramp(t, 0.25, 1.35)))  # water past the props (m/s), slowed for the cutaway
+        S_tab = [0.0]
+        for i in range(1, 200):
+            S_tab.append(S_tab[-1] + vr((i - 0.5) / 80.0) / 80.0)
+        S_flow = lambda t: S_tab[min(199, max(0, int(round(t * 80.0))))]  # metres of net past the props
+        omega = lambda t: 34.0 * (1.0 - smooth(ramp(t, 0.45, 1.45))) * (1.0 + 0.12 * math.sin(31 * t))
+
+        def theta(t, n=60):
+            return sum(omega(t * (j + 0.5) / n) for j in range(n)) * t / n
+        gf = build_gofast()
+        gf['state'] = lambda t: dict(x=0.0, y=0.0, heading=0.0, follow=0.0, foil=0.0, roll=rad(0.5) * wobble(t, 5, (1.3, 2.9, 4.1)))
+        gf['wake'] = {}
+        eng = M('gf_engine', (0.03, 0.03, 0.035), rough=0.35, ir=1.0)
+        steel = M('uw_prop', (0.30, 0.31, 0.32), rough=0.3, metal=0.8, ir=0.5)
+        twine = M('uw_twine', (0.62, 0.62, 0.56), rough=0.9, ir=0.3, emit=0.15)
+        movers, deformers, ems = [], [], []
+        PX, PZ = -7.05, -0.62  # prop hub, in the boat frame (aft of the gearcase)
+        for s in (1, -1):
+            y0 = s * 0.52
+            lu = empty(f'lower{s}', gf['root'], (-6.55, y0, -0.40))
+            cyl(f'gearcase{s}', 0.085, 0.70, eng, parent=lu, loc=(-0.12, 0, -0.22), rot=(0, rad(90), 0))
+            sphere(f'nose{s}', 0.085, eng, scale=(1.8, 1.0, 1.0), parent=lu, loc=(0.24, 0, -0.22))
+            box(f'skeg{s}', (0.26, 0.03, 0.26), eng, parent=lu, loc=(-0.25, 0, -0.40), bevel=0.01)
+            box(f'plate{s}', (0.55, 0.36, 0.025), eng, parent=lu, loc=(-0.18, 0, 0.0), bevel=0.01)
+            prop = empty(f'uwprop{s}')
+            prop.rotation_mode = 'XYZ'
+            sphere(f'uwhub{s}', 0.07, steel, scale=(1.6, 1.0, 1.0), parent=prop)
+            for k in range(3):
+                piv = empty(f'uwbl{s}{k}', prop, rot=(rad(120 * k), 0, 0))
+                box(f'uwblade{s}{k}', (0.03, 0.15, 0.20), steel, parent=piv, loc=(0, 0, 0.13), rot=(0, 0, rad(32)), bevel=0.012)
+            movers.append(dict(ob=prop, on_sea=False, place=lambda t, state, f, y0=y0, s=s: ((PX, y0, PZ), (s * theta(t), 0, 0))))
+            # the net panel streaming in from forward and winding onto the hub
+            NU, NV, LEN, WID = 64, 8, 7.0, 0.9
+            bm = bmesh.new()
+            vv = [[bm.verts.new((i * 0.1, j * 0.1, 0)) for j in range(NV)] for i in range(NU)]
+            for i in range(NU - 1):
+                for j in range(NV - 1):
+                    bm.faces.new((vv[i][j], vv[i + 1][j], vv[i + 1][j + 1], vv[i][j + 1]))
+            net = mesh_obj(f'uwnet{s}', bm, twine)
+            md = net.modifiers.new('wire', 'WIREFRAME')
+            md.thickness = 0.024
+            md.use_even_offset = True
+
+            def fn(t, state, f, h, y0=y0, s=s):
+                St = S_flow(t)
+                th_t = theta(t)
+                out = []
+                for i in range(NU):
+                    u = i / (NU - 1)
+                    D = 0.9 + LEN * u
+                    for j in range(NV):
+                        v = j / (NV - 1)
+                        d = D - St
+                        if d > 0:  # still streaming toward the props, drawn in as it gets close
+                            k = smooth(ramp(1.4 - d, 0.0, 1.4))
+                            oy = (v - 0.5) * WID * (1 - 0.8 * k) + 0.05 * math.sin(3.1 * D + 2.0 * t)
+                            oz = (v - 0.5) * 0.35 * (1 - 0.7 * k) + 0.12 * math.sin(2.3 * D + 1.3 * t) * (1 - k) + 0.06
+                            out.append((PX + 0.05 + d, y0 + oy, PZ + oz * (1 - k)))
+                        else:  # wound onto the hub with the prop
+                            t_c = t - (-d) / 5.0
+                            phi = 2.1 * v + 3.0 * u + (th_t - theta(max(0.0, t_c))) * s
+                            r = 0.09 + 0.07 * v + 0.03 * min(1.0, -d)
+                            out.append((PX + 0.06 * (v - 0.5) + 0.04 * math.sin(7 * u), y0 + r * math.cos(phi), PZ + r * math.sin(phi)))
+                return out
+            deformers.append(dict(ob=net, fn=fn))
+            e = spray_emitter(f'bubbles{s}', (1, int(1.25 * FPS)), 260, life=1.0, vel_normal=1.0, inherit=0.0, size=0.013, rand=1.5, quad=(0.3, 0.3))
+            e['on_sea'] = False
+            e['gravity'] = -0.35
+            e['place'] = lambda t, state, f, y0=y0: ((PX - 0.1, y0, PZ), (0, rad(-90), 0))
+            ems.append(e)
+        # the surface seen from below: moonlight broken into ripples, streaming aft as the boat moves
+        sm, snt, sout = new_mat('uw_surface')
+        geo = snt.node('ShaderNodeNewGeometry')
+        mp = snt.node('ShaderNodeMapping')
+        flow = snt.val(0.0, 'uw_flow')
+        cx = snt.node('ShaderNodeCombineXYZ')
+        snt.link(flow, cx.inputs['X'])
+        snt.link(cx.outputs[0], mp.inputs['Location'])
+        snt.link(geo.outputs['Position'], mp.inputs['Vector'])
+        vo = snt.node('ShaderNodeTexNoise')
+        vo.inputs['Scale'].default_value = 1.6
+        vo.inputs['Detail'].default_value = 3.0
+        snt.link(mp.outputs['Vector'], vo.inputs['Vector'])
+        em = snt.node('ShaderNodeEmission')
+        em.inputs['Color'].default_value = (0.05, 0.17, 0.20, 1)
+        snt.link(snt.math('ADD', 0.12, snt.math('MULTIPLY', snt.sstep(vo.outputs['Fac'], 0.45, 0.62), 0.85)), em.inputs['Strength'])
+        cd = snt.node('ShaderNodeCameraData')
+        fe = snt.node('ShaderNodeEmission')
+        fe.inputs['Color'].default_value = (*self.FOG, 1)
+        mx = snt.node('ShaderNodeMixShader')
+        snt.link(snt.sstep(cd.outputs['View Distance'], 1.5, 11.0), mx.inputs['Fac'])
+        snt.link(em.outputs[0], mx.inputs[1])
+        snt.link(fe.outputs[0], mx.inputs[2])
+        snt.link(mx.outputs[0], sout.inputs['Surface'])
+        surf = box('uw_surface', (60.0, 60.0, 0.02), sm, loc=(-5.0, 0.0, 0.03))
+        surf.visible_shadow = False
+        fog_all_materials(self.FOG, 0.5, 6.5)
+
+        def camera(t, state, f):
+            pos = (-6.45 + 0.03 * wobble(t, 1, (0.8, 1.7, 2.9)), -1.75, -0.86 + 0.03 * wobble(t, 2, (0.7, 1.9, 3.1)))
+            return pos, (-7.0, 0.2, -0.58), 24.0, rad(0.6) * wobble(t, 9, (0.4, 0.9, 1.6))
+        return dict(vessels=[gf], emitters=ems, movers=movers, deformers=deformers, camera=camera, focus=lambda t: (0.0, 0.0),
+                    setup_world=self.setup_world, wake_anim={'uw_flow': lambda t: -S_flow(t) * 0.35})
+
+
+SHOTS = {s.id: s for s in (Shot01, Shot03, Shot06, Shot07, Shot09, Shot10, Shot10H, Shot06B, ShotVector, ShotSensor, ShotFan, ShotStrut, ShotTop, ShotFront, ShotIsolate, ShotPass, ShotNet, ShotFouled, ShotHold, ShotProp)}
 
 if __name__ == '__main__':
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]

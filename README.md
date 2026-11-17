@@ -1,6 +1,6 @@
 # Marlin — 60s concept video
 
-**Client:** Archimedes Freight, Inc. · **Production:** Phatty Acid, Inc. · **Tagline:** Detect. Isolate. Surveil.
+**Client:** Archimedes Freight, Inc. · **Production:** Phatty Acid, Inc. · **Tagline:** Intercept. Surveil. Stop.
 
 The video is built in code with [Remotion](https://www.remotion.dev) (React → MP4). Remotion is the master
 timeline: motion graphics, HUD overlays, maps, titles and the end card are built here, and 3D / stock
@@ -15,7 +15,23 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
-## Animatic v4.0 (approved new structure, cut to the score): current
+## Animatic v5.0 (Storyboard V7: Intercept. Surveil. Stop.): current
+
+Review file: `review/marlin-animatic-v5.0.mp4` (24 fps, 14 storyboard shots on the beat grid of a 104 BPM score).
+What changed and why (page-6 fixes, the narration note, clearance notes, open questions): `docs/v5-storyboard-v7.md`.
+Storyboard: `docs/reference/Marlin_Counter-Drug_Storyboard_V7.pdf`.
+
+| Part | Where | How to rebuild |
+|---|---|---|
+| Edit | `src/v5/MarlinV5.tsx` (cut list in beats), `src/v5/timeline.ts`, `src/v5/COP5.tsx` (tactical display), `src/v5/Radar5.tsx` | `npx remotion render src/index.ts Marlin review/marlin-animatic-v5.0.mp4 --crf=17` |
+| New 3D shots (the stop) | `blender/previz.py`: `p1` pass, `n1` net away, `x1` fouled, `u1` prop cutaway, `h1` hold | `blender/render_v5.sh` |
+| Narration | auditions `scripts/vo_audition_v5.py`, `vo_rate_v5.py`, `vo_ab_v5.py`; takes `generate_vo_v5.py`; pick `pick_vo_v5.py` | see `docs/v5-storyboard-v7.md` |
+| Score | `scripts/generate_music_v5.py` (candidate 2 kept); its arc (sink, silence, build, stop) is shaped in the mix | `python3 scripts/generate_music_v5.py 4` |
+| Effects + mix | `scripts/generate_sfx_v5.py`, `scripts/build_audio_v5.py` | `/opt/venv-audio/bin/python scripts/build_audio_v5.py` |
+
+v4 stays in the project as composition `MarlinV4`.
+
+## Animatic v4.0 (approved new structure, cut to the score)
 
 Review file: `review/marlin-animatic-v4.0.mp4` (24 fps, 62 shots, every cut on a beat of the 104 BPM score).
 What the client's reference film does and how v4 applies it: `docs/v4-reference-and-cut.md`.
@@ -23,7 +39,7 @@ New clean 3D plates: `review/v4/reference/`. Audio stems (score, effects, voice,
 
 | Part | Where | How to rebuild |
 |---|---|---|
-| Edit | `src/v4/MarlinV4.tsx` (cut list in beats), `src/v4/timeline.ts` (beat grid), `src/v4/Map.tsx` (tactical display) | `npx remotion render src/index.ts Marlin review/marlin-animatic-v4.0.mp4 --crf=18` |
+| Edit | `src/v4/MarlinV4.tsx` (cut list in beats), `src/v4/timeline.ts` (beat grid), `src/v4/Map.tsx` (tactical display) | `npx remotion render src/index.ts MarlinV4 review/marlin-animatic-v4.0.mp4 --crf=18` |
 | New 3D shots | `blender/previz.py`: `06b v1 i1 s1 f1 k1 r2 t1 10h` | `blender/render_v4.sh && blender/render_v4b.sh` |
 | Score | `scripts/generate_music_v4.py` (ElevenLabs Music, bar plan at 104 BPM) | `python3 scripts/generate_music_v4.py 3 1` |
 | Narration | `scripts/generate_vo_v4.py` (14 short lines, voice Brian) | `python3 scripts/generate_vo_v4.py` |

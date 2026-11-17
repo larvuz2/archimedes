@@ -6,8 +6,9 @@ import {renderStill, selectComposition} from '@remotion/renderer';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const [outDir, list, scale = '0.5', id = 'Marlin'] = process.argv.slice(2);
-const frames = list.split(',').map((s) => (s.startsWith('k') ? Math.round((0.345 + (Number(s.slice(1)) * 60) / 104) * 24) + 2 : Number(s)));
+const [outDir, list, scale = '0.5', id = 'Marlin', t0 = '0.055'] = process.argv.slice(2);
+const T0 = Number(t0);
+const frames = list.split(',').map((s) => (s.startsWith('k') ? Math.round((T0 + (Number(s.slice(1)) * 60) / 104) * 24) + 2 : Number(s)));
 fs.mkdirSync(outDir, {recursive: true});
 const serveUrl = await bundle({entryPoint: path.resolve('src/index.ts')});
 const chromiumOptions = {gl: 'swangle'};
