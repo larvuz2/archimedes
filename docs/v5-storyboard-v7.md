@@ -44,7 +44,7 @@ The new score runs at exactly 104 BPM with its first beat at 0.055 s. Every shot
 | 01 The boat | 0:00 | 0:00.06 | go-fast, tight, moving (punch-in on the crew) | | pulse from frame one, outboards flat out |
 | 02 Detected and designated | 0:04 | 0:04.09 | aircraft radar: intel cue, hook, CUE ✓ DETECTED ✓ DESIGNATED ✓, TOI-01 · SUSPECT GO-FAST | | sweep tones, muffled aircraft drone, the score tightens |
 | 03 No end game | 0:09 | 0:09.29 | pull back to the COP; aircraft breaks off; cutter far, USV slow; track goes dashed | | the score sinks (tape-stop) to silence |
-| 04 Tasked | 0:14 | 0:13.90 | twenty Marlins on station, rings tile; C2 · TASK MARLIN ×2; TASKED; intercept lines | | one held tone in the silence, riser |
+| 04 Tasked | 0:14 | 0:13.90 | twenty Marlins on station, rings tile; C2 · TASK MARLIN ×2; TASKED; intercept lines | | one held tone in the silence, a low swell into the kick |
 | 05 Lift | 0:18 | 0:18.52 | fan spools, climbs onto the foils, gone; **01 INTERCEPT** | "Tasked, the nearest two close" | the kick, fan to full roar |
 | 06 Converge | 0:22 | 0:21.98 | head-on and flank closing; 50 NM · 30 MIN* (design target) | "fifty miles in thirty minutes," | a data tone on each track update |
 | 07 Eyes on | 0:26 | 0:26.02 | MARLIN IR, 3 POB · BALES, LIVE TO C2; pull out to the standoff; **02 SURVEIL** | "put eyes on," | fan drops to a hull-borne hum, hull slap |
@@ -55,6 +55,19 @@ The new score runs at exactly 104 BPM with its first beat at 0.055 s. Every shot
 | 12 Hold | 0:46 | 0:46.21 | dead in the water; both Marlins at standoff, eyes on; partner closing; PARTNER EN ROUTE, DIW | "until partners arrive." | idle hum, a distant engine growing |
 | 13 The fleet | 0:50 | 0:50.82 | pull back to the full picture (framed like 03); five Marlins slide over, rings re-tile; words land one per hit | "Intercept. Surveil. Stop." | the score resolves, three hits |
 | 14 End card | 0:56 | 0:56.02 | hard cut to navy, a beat of silence, logo, MARLIN, tagline, contact, disclaimer | [pause] "Marlin." | single fan spool-up to black |
+
+## Sound checks
+
+Sound was checked by instruments, not by ear.
+
+- **Rejected effect.** The generated "swerve" effect had a scream in it, so it was deleted. The swerve uses the go-fast clip that was already checked.
+- **Generated net slap.** In the mix it read as a "gobble", so it was replaced by synthesized splashes.
+- **The riser before the lift.** It sat exposed in near-silence, and the listening check said it could pass for an electronic scream. It was replaced by a low swell.
+- **Final mix.**
+  - The voice-artifact classifier is clean: worst reading 0.02.
+  - The listening model hears no voice other than the narrator, and no glitches.
+  - Every narration line was heard and transcribed.
+  - Loudness is -14.0 LUFS, true peak -2.1 dBFS.
 
 ## Clearance notes applied
 

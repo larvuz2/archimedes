@@ -224,8 +224,8 @@ const Fouled: React.FC = () => {
       <Clip src="shotx1" rate={RATE11} z={[1.0, 1.06]} o={[0.55, 0.55]} />
       {ik > 0 && (
         <Sequence from={Math.round((insetIn - tk(72)) * fps)}>
-          <div style={{position: 'absolute', right: 64, bottom: 110, width: 720, height: 405, overflow: 'hidden', borderRadius: 6, border: '2px solid rgba(255,255,255,0.8)',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.6)', opacity: ik, transform: `scale(${0.94 + 0.06 * ik})`, transformOrigin: '100% 100%'}}>
+          <div style={{position: 'absolute', left: 64, bottom: 110, width: 720, height: 405, overflow: 'hidden', borderRadius: 6, border: '2px solid rgba(255,255,255,0.8)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.6)', opacity: ik, transform: `scale(${0.94 + 0.06 * ik})`, transformOrigin: '0% 100%'}}>
             <div style={{width: 1920, height: 1080, transform: `scale(${720 / 1920})`, transformOrigin: '0 0', position: 'relative'}}>
               <Clip src="shotu1" from={4} z={[1.05, 1.12]} />
               <div style={{...mono(54, colors.white), position: 'absolute', top: 40, left: 50, border: '3px solid #fff', padding: '8px 22px', borderRadius: 6, background: 'rgba(8,14,22,0.6)'}}>PROP FOULED</div>

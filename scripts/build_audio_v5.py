@@ -216,17 +216,20 @@ def build_sfx():
     b.add(st(chime()), TASK, -14.0)
     for i, p_ in enumerate((-0.4, 0.4)):
         b.add(panned(st(swish(0.45)), p_), INTERCEPT + 0.1 * i, -17.0)
-    b.add(fade(riser, 0.02, 0.005), KICK, -8.0, end_at=True)
-    b.add(fade(suck[-n_(0.9):], 0.02, 0.005), KICK, -11.0, end_at=True)
+    # no bright riser here: it sits in near-silence, and in this context the listening check heard a rising whine as a
+    # possible 'electronic scream'. A low swell builds into the kick instead.
+    b.add(st(sub_boom(2.2, 28.0, 0.0, 9.0))[::-1] * np.linspace(0, 1, n_(2.2))[:, None] ** 2, KICK, -9.0, end_at=True)
+    b.add(fade(lp(norm(src4('underwater'), -14), 900), 1.2, 0.02)[:n_(2.4)], KICK, -6.0, end_at=True)
+    b.add(fade(lp(suck[-n_(0.9):], 3000), 0.02, 0.005), KICK, -13.0, end_at=True)
     # ---- 05 lift: the kick; the fan spools to a full roar, it climbs onto the foils and is gone
     hit(KICK, 0.0)
-    b.add(fade(norm(src4('fan_spool'), -12), 0.03, 0.4), KICK - 0.05, -1.0)
-    run = norm(lp(src4('run'), 5500), -16)
+    b.add(fade(lp(norm(src4('fan_spool'), -12), 3000), 0.03, 0.4), KICK - 0.05, -1.0)
+    run = norm(lp(src4('run'), 3800), -16)
     roar = fade(loop(run, t(38) - t(33) + 0.3, 0.5), 0.5, 0.25)
     roar *= np.linspace(0.6, 1.2, len(roar))[:, None]
     b.add(roar, t(33), -2.0)
     b.add(fade(norm(src4('splash'), -8, 'peak'), 0.002, 0.3), t(33) + 0.5, -10.0)
-    b.add(lp(panned(norm(src4('passby'), -8, 'peak'), np.linspace(-0.6, 0.9, len(src4('passby')))), 4200), t(36.4), -8.0)
+    b.add(lp(panned(norm(src4('passby'), -8, 'peak'), np.linspace(-0.6, 0.9, len(src4('passby')))), 3200), t(36.4), -8.0)
     # ---- 06 converge: driving score; a data tone on each track update
     cut_whoosh(t(38), -15.0, 0.3)
     for i, u in enumerate(UPDATES):
@@ -241,13 +244,13 @@ def build_sfx():
     # ---- 08 authorized: a single confirm tone; the plan draws itself; the score builds
     b.add(st(chime()), AUTHORIZED, -12.0)
     b.add(panned(st(swish(0.8, 300, 3000)), 0.3), PLAN + 0.1, -16.0)
-    b.add(fade(riser, 0.02, 0.005), STOP, -7.0, end_at=True)
-    b.add(fade(suck, 0.02, 0.005), STOP, -10.0, end_at=True)
+    b.add(fade(lp(riser, 2200), 0.2, 0.005), STOP, -9.0, end_at=True)
+    b.add(fade(lp(suck, 3500), 0.02, 0.005), STOP, -11.0, end_at=True)
     # ---- 09 pass: STOP; fan roar as it passes, the outboards answer
     hit(STOP, +1.0, -3.0)
     b.add(fade(loop(run, 2.4, 0.4), 0.3, 0.6), STOP + 0.2, -3.0)
-    b.add(lp(panned(norm(src4('passby'), -6, 'peak'), np.linspace(-0.8, 0.8, len(src4('passby')))), 4200), STOP + 1.0, -6.0)
-    b.add(lp(fade(loop(gofast, t(72) - (STOP + 1.9) + 0.1, 0.5), 0.5, 0.05), 5500), STOP + 1.9, -5.0)
+    b.add(lp(panned(norm(src4('passby'), -6, 'peak'), np.linspace(-0.8, 0.8, len(src4('passby')))), 3200), STOP + 1.0, -6.0)
+    b.add(lp(fade(loop(gofast, t(72) - (STOP + 1.9) + 0.1, 0.5), 0.5, 0.05), 4000), STOP + 1.9, -5.0)
     # ---- 10 net away: a sharp pneumatic thump; the net slaps the water
     b.add(fade(lp(norm(src5('net_launch'), -3, 'peak'), 6500), 0.002, 0.3), NET_FIRE - 0.01, -3.0)
     b.add(boom, NET_FIRE, -10.0)
