@@ -87,9 +87,9 @@ const partnerAt = (t: number) => lerpP(PARTNER0, rel(t, 10, 110), 0.85 * ease(ra
 export type Camera = {cx: number; cy: number; k: number; rot?: number};
 
 const Label: React.FC<{x: number; y: number; s: number; rot: number; color: string; children: React.ReactNode; anchor?: 'start' | 'end' | 'middle'; size?: number; o?: number}> =
-  ({x, y, s, rot, color, children, anchor = 'start', size = 17, o = 1}) => (
+  ({x, y, s, rot, color, children, anchor = 'start', size = 32, o = 1}) => (
     <text x={x} y={y} fill={color} fontFamily={fonts.mono} fontSize={size * s} letterSpacing={1.5 * s} textAnchor={anchor} opacity={o}
-      transform={rot ? `rotate(${-rot} ${x} ${y})` : undefined} style={{paintOrder: 'stroke'}} stroke={BG} strokeWidth={4.5 * s}>{children}</text>
+      transform={rot ? `rotate(${-rot} ${x} ${y})` : undefined} style={{paintOrder: 'stroke'}} stroke={BG} strokeWidth={8 * s}>{children}</text>
   );
 const Arrow: React.FC<{from: P; to: P; s: number; color: string; width?: number; o?: number; dash?: boolean}> = ({from, to, s, color, width = 2.4, o = 1, dash}) => {
   const ang = (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI;
@@ -130,8 +130,8 @@ const MarlinMark: React.FC<{p: P; s: number; t: number; seed: number; o: number;
   );
 };
 const coastPath = 'M-400 940 C 220 900, 380 975, 620 935 S 1000 890, 1250 925 S 1650 965, 2320 915 L2320 1480 L-400 1480 Z';
-const chip = (c: string, extra: React.CSSProperties = {}): React.CSSProperties => ({fontFamily: fonts.mono, fontSize: 20, letterSpacing: '0.12em', color: c,
-  border: `1.5px solid ${c}`, padding: '6px 14px', borderRadius: 3, background: 'rgba(8,14,22,0.7)', ...extra});
+const chip = (c: string, extra: React.CSSProperties = {}): React.CSSProperties => ({fontFamily: fonts.mono, fontSize: 36, letterSpacing: '0.1em', color: c,
+  border: `2px solid ${c}`, padding: '8px 18px', borderRadius: 4, background: 'rgba(8,14,22,0.75)', ...extra});
 
 export const COP5: React.FC<{start: number; camera: (t: number) => Camera; readout?: boolean; stopProfile?: boolean}> = ({start, camera, readout, stopProfile}) => {
   const frame = useCurrentFrame();
@@ -190,11 +190,11 @@ export const COP5: React.FC<{start: number; camera: (t: number) => Camera; reado
               strokeWidth={1.4 * s} strokeDasharray={`${6 * s} ${5 * s}`} opacity={ramp(t, tk(17), tk(18))} />
             <path d={`M${CUTTER.x - 18} ${CUTTER.y - 7} L${CUTTER.x + 14} ${CUTTER.y - 7} L${CUTTER.x + 22} ${CUTTER.y} L${CUTTER.x + 14} ${CUTTER.y + 7} L${CUTTER.x - 18} ${CUTTER.y + 7} Z`}
               fill="none" stroke={colors.white} strokeWidth={2 * s} />
-            <Label x={CUTTER.x} y={CUTTER.y + CUTTER_REACH + 26 * s} s={s} rot={rot} color={colors.steel} anchor="middle">CUTTER</Label>
+            {t < T.task - 0.3 && <Label x={CUTTER.x} y={CUTTER.y + CUTTER_REACH + 40 * s} s={s} rot={rot} color={colors.steel} anchor="middle">CUTTER</Label>}
             <circle cx={USV.x} cy={USV.y} r={USV_REACH} fill="none" stroke={colors.steel} strokeOpacity={0.85} strokeWidth={1.4 * s} strokeDasharray={`${4 * s} ${3 * s}`}
               opacity={ramp(t, tk(17.5), tk(18.5))} />
             <circle cx={USV.x} cy={USV.y} r={4 * s} fill={colors.white} />
-            <Label x={USV.x + 22 * s} y={USV.y + 6 * s} s={s} rot={rot} color={colors.steel}>USV · 3 KT</Label>
+            {t < T.task - 0.3 && <Label x={USV.x + 26 * s} y={USV.y + 11 * s} s={s} rot={rot} color={colors.steel}>USV · 3 KT</Label>}
             <ellipse cx={NEUTRAL.x} cy={NEUTRAL.y} rx={17 * s} ry={7.5 * s} fill="none" stroke={colors.steel} strokeOpacity={0.8} strokeWidth={1.6 * s} />
           </g>
 
@@ -252,7 +252,7 @@ export const COP5: React.FC<{start: number; camera: (t: number) => Camera; reado
               <g opacity={vK}>
                 <polyline points={`${legL.x},${legL.y} ${apex.x},${apex.y} ${legR.x},${legR.y}`} fill="none" stroke={colors.white} strokeWidth={2.6 * s}
                   strokeDasharray={`${3 * s} ${4 * s}`} />
-                <Label x={apex.x} y={apex.y} s={s} rot={rot} color={colors.white} size={18}>{'  V-NET'}</Label>
+                <Label x={apex.x + 14 * s} y={apex.y + 11 * s} s={s} rot={rot} color={colors.white} size={34}>V-NET</Label>
               </g>
             </g>
           )}
@@ -268,7 +268,7 @@ export const COP5: React.FC<{start: number; camera: (t: number) => Camera; reado
             <g opacity={partnerO}>
               <line x1={PARTNER0.x + 200} y1={PARTNER0.y + 10} x2={partner.x} y2={partner.y} stroke={colors.white} strokeOpacity={0.85} strokeWidth={1.8 * s} strokeDasharray={`${8 * s} ${6 * s}`} />
               <rect x={partner.x - 9 * s} y={partner.y - 9 * s} width={18 * s} height={18 * s} fill={BG} stroke={colors.white} strokeWidth={2 * s} />
-              <Label x={partner.x + 18 * s} y={partner.y - 16 * s} s={s} rot={rot} color={colors.white}>PARTNER</Label>
+              <Label x={partner.x + 22 * s} y={partner.y - 22 * s} s={s} rot={rot} color={colors.white}>PARTNER</Label>
             </g>
           )}
 
@@ -279,20 +279,20 @@ export const COP5: React.FC<{start: number; camera: (t: number) => Camera; reado
           })}
           {tasked && t < tk(38) && (
             <g opacity={out3(ramp(t, T.task + 0.15, T.task + 0.4))}>
-              <Label x={A0.x + 18 * s} y={A0.y - 18 * s} s={s} rot={rot} color={colors.white} size={19}>TASKED</Label>
-              <Label x={B0.x + 18 * s} y={B0.y - 18 * s} s={s} rot={rot} color={colors.white} size={19}>TASKED</Label>
+              <Label x={A0.x + 24 * s} y={A0.y - 26 * s} s={s} rot={rot} color={colors.white} size={36}>TASKED</Label>
+              <Label x={B0.x + 24 * s} y={B0.y - 26 * s} s={s} rot={rot} color={colors.white} size={36}>TASKED</Label>
             </g>
           )}
           {committed && t < tk(45) && (
             <>
-              <Label x={a.x - 20 * s} y={a.y + 34 * s} s={s} rot={rot} color={colors.marlin} anchor="end">MARLIN · HEAD-ON</Label>
-              <Label x={b.x + 20 * s} y={b.y + 34 * s} s={s} rot={rot} color={colors.marlin}>MARLIN · FLANK</Label>
+              <Label x={a.x - 24 * s} y={a.y + 52 * s} s={s} rot={rot} color={colors.marlin} anchor="end">MARLIN · HEAD-ON</Label>
+              <Label x={b.x + 24 * s} y={b.y + 52 * s} s={s} rot={rot} color={colors.marlin}>MARLIN · FLANK</Label>
             </>
           )}
           {stopProfile && (
             <>
-              <Label x={a.x} y={a.y - 22 * s} s={s} rot={rot} color={colors.marlin} anchor="middle">LEAD</Label>
-              <Label x={b.x} y={b.y + 34 * s} s={s} rot={rot} color={colors.marlin} anchor="middle">FLANK</Label>
+              <Label x={a.x} y={a.y - 30 * s} s={s} rot={rot} color={colors.marlin} anchor="middle">LEAD</Label>
+              <Label x={b.x} y={b.y + 54 * s} s={s} rot={rot} color={colors.marlin} anchor="middle">FLANK</Label>
             </>
           )}
 
@@ -303,44 +303,44 @@ export const COP5: React.FC<{start: number; camera: (t: number) => Camera; reado
           {t < T.fleetOn ? (
             <g opacity={1 - ramp(t, T.fleetOn - 0.5, T.fleetOn)}>
               <Label x={toi.x - ORX - 18} y={toi.y - 14 * s} s={s} rot={rot} color={colors.threat} anchor="end">TOI-01 · GO-FAST</Label>
-              <Label x={toi.x - ORX - 18} y={toi.y + 10 * s} s={s} rot={rot} color={colors.threat} anchor="end">NO NAV LTS · 3 POB · 30 KT</Label>
+              <Label x={toi.x - ORX - 18} y={toi.y + 28 * s} s={s} rot={rot} color={colors.threat} anchor="end">NO NAV LTS · 3 POB · 30 KT</Label>
             </g>
           ) : (
-            <Label x={toi.x + 22 * s} y={toi.y - 14 * s} s={s} rot={rot} color={colors.threat}>{stopped ? 'TOI-01 · DIW' : 'TOI-01'}</Label>
+            <Label x={toi.x + 28 * s} y={toi.y - 20 * s} s={s} rot={rot} color={colors.threat}>{stopped ? 'TOI-01 · DIW' : 'TOI-01'}</Label>
           )}
 
           {/* patrol aircraft */}
           {t < T.mpaBreaks + 2.0 && (
             <g opacity={1 - ramp(t, T.mpaBreaks + 1.6, T.mpaBreaks + 2.0)}>
               <Plane p={mpa} angle={mpaAngle} s={1.3 * s} />
-              <Label x={mpa.x} y={mpa.y - 26 * s} s={s} rot={rot} color={colors.white} anchor="middle">MPA</Label>
+              <Label x={mpa.x} y={mpa.y - 38 * s} s={s} rot={rot} color={colors.white} anchor="middle">MPA</Label>
             </g>
           )}
         </g>
       </svg>
 
       {/* display chrome */}
-      <div style={{position: 'absolute', top: 92, left: 40, display: 'flex', gap: 14, alignItems: 'center', fontFamily: fonts.mono, fontSize: 18, color: colors.steel, letterSpacing: '0.12em'}}>
-        <span style={{border: `1.5px solid ${colors.steel}`, padding: '4px 10px', borderRadius: 3}}>COP</span>
-        <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
-          <span style={{width: 16, height: 16, borderRadius: 8, border: `1.5px dashed ${colors.steel}`, display: 'inline-block'}} />30-MIN REACH
+      <div style={{position: 'absolute', top: 84, left: 40, display: 'flex', gap: 20, alignItems: 'center', fontFamily: fonts.mono, fontSize: 32, color: colors.steel, letterSpacing: '0.1em'}}>
+        <span style={{border: `2px solid ${colors.steel}`, padding: '5px 14px', borderRadius: 4}}>COP</span>
+        <span style={{display: 'flex', alignItems: 'center', gap: 12}}>
+          <span style={{width: 28, height: 28, borderRadius: 14, border: `2px dashed ${colors.steel}`, display: 'inline-block'}} />30-MIN REACH
         </span>
         {tasked && t < tk(38) && <span style={chip(colors.white, {opacity: out3(ramp(t, T.task, T.task + 0.2))})}>C2 · TASK MARLIN ×2</span>}
       </div>
       {readout && (
         <>
-          <div style={chip(colors.marlin, {position: 'absolute', top: 150, left: 40, fontSize: 40, padding: '10px 24px', borderWidth: 2.5})}>50 NM · 30 MIN*</div>
-          <div style={{position: 'absolute', left: 40, top: 232, fontFamily: fonts.mono, fontSize: 20, color: 'rgba(255,255,255,0.85)'}}>*Design target</div>
+          <div style={chip(colors.marlin, {position: 'absolute', top: 168, left: 40, fontSize: 56, padding: '10px 26px', borderWidth: 3})}>50 NM · 30 MIN*</div>
+          <div style={{position: 'absolute', left: 40, top: 274, fontFamily: fonts.mono, fontSize: 32, color: 'rgba(255,255,255,0.88)'}}>*Design target</div>
         </>
       )}
       {stopProfile && (
-        <div style={{position: 'absolute', top: 150, right: 64, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, opacity: out3(ramp(t, T.authorized, T.authorized + 0.2))}}>
-          <div style={chip(colors.white, {fontSize: 24, padding: '8px 18px'})}>C2 · STOP AUTHORIZED · PROFILE: V-NET</div>
-          <div style={{fontFamily: fonts.mono, fontSize: 20, letterSpacing: '0.14em', color: colors.steel}}>NOTIONAL STOP PROFILE</div>
+        <div style={{position: 'absolute', top: 150, right: 64, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12, opacity: out3(ramp(t, T.authorized, T.authorized + 0.2))}}>
+          <div style={chip(colors.white, {fontSize: 40, padding: '10px 22px'})}>C2 · STOP AUTHORIZED · PROFILE: V-NET</div>
+          <div style={{fontFamily: fonts.mono, fontSize: 34, letterSpacing: '0.12em', color: colors.steel}}>NOTIONAL STOP PROFILE</div>
         </div>
       )}
       {cam.k < 1.25 && (
-        <div style={{position: 'absolute', right: 70, bottom: 90, fontFamily: fonts.mono, fontSize: 16, color: colors.steel, textAlign: 'center', opacity: 1 - ramp(cam.k, 1.05, 1.25)}}>
+        <div style={{position: 'absolute', right: 70, bottom: 90, fontFamily: fonts.mono, fontSize: 30, color: colors.steel, textAlign: 'center', opacity: 1 - ramp(cam.k, 1.05, 1.25)}}>
           <div style={{width: 250, borderBottom: `2px solid ${colors.steel}`, borderLeft: `2px solid ${colors.steel}`, borderRight: `2px solid ${colors.steel}`, height: 8}} />
           <div style={{marginTop: 6}}>50 NM</div>
         </div>

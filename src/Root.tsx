@@ -13,8 +13,11 @@ import {VIDEO} from './theme';
 
 export const RemotionRoot: React.FC = () => (
   <>
-    {/* Current cut: Animatic v5.0 (Storyboard V7: Intercept. Surveil. Stop.), 24 fps */}
-    <Composition id="Marlin" component={MarlinV5} durationInFrames={60 * V5.fps} {...V5} defaultProps={{slate: true}} />
+    {/* Current cut: Animatic v5.1 (Storyboard V7: Intercept. Surveil. Stop.), 24 fps, two narrator options */}
+    <Composition id="Marlin" component={MarlinV5} durationInFrames={60 * V5.fps} {...V5}
+      defaultProps={{slate: true, audio: 'audio/v5/mix.flac', version: 'ANIMATIC v5.1 · A'}} />
+    <Composition id="MarlinB" component={MarlinV5} durationInFrames={60 * V5.fps} {...V5}
+      defaultProps={{slate: true, audio: 'audio/v5/mix_deep.flac', version: 'ANIMATIC v5.1 · B'}} />
     <Composition id="MarlinV4" component={MarlinV4} durationInFrames={60 * V4.fps} {...V4} defaultProps={{slate: true}} />
     <Composition id="MarlinV3" component={MarlinV3} durationInFrames={60 * V3.fps} {...V3} defaultProps={{slate: true}} />
     <Composition id="MarlinV2" component={MarlinV2} durationInFrames={60 * VIDEO.fps} {...VIDEO} defaultProps={{slate: true}} />

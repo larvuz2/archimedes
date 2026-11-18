@@ -2,6 +2,7 @@
 
   /opt/venv-audio/bin/python scripts/build_audio_v5.py            # build stems and master
   /opt/venv-audio/bin/python scripts/build_audio_v5.py --master-only
+  /opt/venv-audio/bin/python scripts/build_audio_v5.py --vo public/audio/v5/vo_deep/Brian --tag deep   # option B -> mix_deep.flac
 
 The score (public/audio/v5/music.mp3, ElevenLabs Music) runs at exactly 104 BPM with its first beat at 0.055 s:
     t(k) = 0.055 + k * 60/104          (src/v5/timeline.ts uses the same grid)
@@ -294,7 +295,7 @@ def build_vo():
     out = np.zeros((n_(DUR), 2))
     lens = {}
     for k, at in VO.items():
-        x, sr = sf.read(V5 / 'vo' / f'{k}.wav', dtype='float32')
+        x, sr = sf.read(VO_DIR / f'{k}.wav', dtype='float32')
         assert sr == SR
         x = norm(x, -20.0)
         if k in ('l5a', 'l5b', 'l5c', 'l6'):
@@ -307,6 +308,13 @@ def build_vo():
     return out, lens
 
 
+# option B (v5.1): the same mix with another narration folder; every file it writes carries the tag
+VO_DIR = V5 / 'vo'
+TAG = ''
+if '--vo' in sys.argv:
+    VO_DIR = pathlib.Path(sys.argv[sys.argv.index('--vo') + 1]).resolve()
+if '--tag' in sys.argv:
+    TAG = '_' + sys.argv[sys.argv.index('--tag') + 1]
 TARGET_LUFS = -14.0
 CEILING = 10 ** (-3.0 / 20)
 
@@ -321,30 +329,30 @@ def master(music, sfx, vo):
     gain_db = 0.0
     for _ in range(5):
         out = np.clip(limiter(pre * 10 ** (gain_db / 20), SR).T, -CEILING, CEILING)
-        sf.write(V5 / 'mix_premaster.wav', out, SR, subtype='PCM_24')
-        i_lufs, lra, peak, curve = B4.loudness(V5 / 'mix_premaster.wav')
+        sf.write(V5 / f'mix_premaster{TAG}.wav', out, SR, subtype='PCM_24')
+        i_lufs, lra, peak, curve = B4.loudness(V5 / f'mix_premaster{TAG}.wav')
         if abs(TARGET_LUFS - i_lufs) < 0.15:
             break
         gain_db += TARGET_LUFS - i_lufs
     out[-n_(0.3):] *= np.linspace(1, 0, n_(0.3))[:, None]
-    sf.write(V5 / 'mix_premaster.wav', out, SR, subtype='PCM_24')
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(V5 / 'mix_premaster.wav'), '-ar', str(SR), '-c:a', 'flac', '-sample_fmt', 's16', str(V5 / 'mix.flac')], check=True)
-    i_lufs, lra, peak, curve = B4.loudness(V5 / 'mix.flac')
+    sf.write(V5 / f'mix_premaster{TAG}.wav', out, SR, subtype='PCM_24')
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(V5 / f'mix_premaster{TAG}.wav'), '-ar', str(SR), '-c:a', 'flac', '-sample_fmt', 's16', str(V5 / f'mix{TAG}.flac')], check=True)
+    i_lufs, lra, peak, curve = B4.loudness(V5 / f'mix{TAG}.flac')
     print(f'master gain {gain_db:+.1f} dB -> {i_lufs:.1f} LUFS, LRA {lra:.1f} LU, true peak {peak:.1f} dBFS')
     print('short-term loudness every 3 s:', ' '.join(f'{v:.0f}' for v in curve))
 
 
 def main():
     if '--master-only' in sys.argv:
-        music, sfx, vo = (sf.read(V5 / f'{n}.wav', dtype='float64')[0] for n in ('music', 'sfx', 'vo'))
+        music, sfx, vo = (sf.read(V5 / f'{n}{TAG}.wav', dtype='float64')[0] for n in ('music', 'sfx', 'vo'))
         return master(music, sfx, vo)
     vo, vo_lens = build_vo()
     music = build_music(vo_lens) * 10 ** (-2.0 / 20)
     tt = np.arange(n_(DUR)) / SR
     sfx = build_sfx() * duck(vo_lens, 5.0, tt)
     for name, x in (('music', music), ('sfx', sfx), ('vo', vo)):
-        sf.write(V5 / f'{name}.wav', x, SR, subtype='FLOAT')
-    json.dump(dict(beat=BEAT, t0=T0, vo=VO, vo_lens=vo_lens), open(V5 / 'timeline.json', 'w'), indent=1)
+        sf.write(V5 / f'{name}{TAG}.wav', x, SR, subtype='FLOAT')
+    json.dump(dict(beat=BEAT, t0=T0, vo=VO, vo_lens=vo_lens), open(V5 / f'timeline{TAG}.json', 'w'), indent=1)
     print('sec   sfx  music    vo')
     for s in range(60):
         row = [20 * np.log10(np.sqrt(np.mean(x[n_(s):n_(s + 1)] ** 2)) + 1e-9) for x in (sfx, music, vo)]

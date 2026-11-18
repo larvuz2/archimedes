@@ -79,7 +79,7 @@ export const Radar5: React.FC<{start: number}> = ({start}) => {
           return (
             <g key={r}>
               <path d={`M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}`} fill="none" stroke="#1E3346" strokeWidth={1.5} />
-              <text x={lab.x + 6} y={lab.y + 24} fill={colors.steel} opacity={0.75} fontFamily={fonts.mono} fontSize={16} letterSpacing={1.5}>{(i + 1) * 20} NM</text>
+              <text x={lab.x + 6} y={lab.y + 24} fill={colors.steel} opacity={0.75} fontFamily={fonts.mono} fontSize={30} letterSpacing={1.5}>{(i + 1) * 20} NM</text>
             </g>
           );
         })}
@@ -107,7 +107,7 @@ export const Radar5: React.FC<{start: number}> = ({start}) => {
         {/* cued search box */}
         <g transform={`rotate(${AOI.rot} ${AOI.cx} ${AOI.cy})`}>
           <rect x={AOI.cx - AOI.w / 2} y={AOI.cy - AOI.h / 2} width={AOI.w} height={AOI.h} fill="none" stroke={colors.white} strokeOpacity={0.75 * cueK} strokeWidth={2} strokeDasharray="12 9" />
-          <text x={AOI.cx - AOI.w / 2 + 8} y={AOI.cy - AOI.h / 2 - 12} fill={colors.white} opacity={0.85 * cueK} fontFamily={fonts.mono} fontSize={18} letterSpacing={2}>INTEL CUE</text>
+          <text x={AOI.cx - AOI.w / 2 + 8} y={AOI.cy - AOI.h / 2 - 16} fill={colors.white} opacity={0.9 * cueK} fontFamily={fonts.mono} fontSize={36} letterSpacing={2}>INTEL CUE</text>
         </g>
         {/* the return that holds */}
         <circle cx={CONTACT.x} cy={CONTACT.y} r={6.5} fill={colors.white} opacity={contactLit} />
@@ -120,8 +120,8 @@ export const Radar5: React.FC<{start: number}> = ({start}) => {
               return <path key={`${sx}${sy}`} d={`M ${x} ${y - sy * 12} L ${x} ${y} L ${x - sx * 12} ${y}`} />;
             })}
             <g opacity={tagK}>
-              <text x={CONTACT.x + 40} y={CONTACT.y - 4} fill={colors.threat} stroke="none" fontFamily={fonts.mono} fontSize={22} letterSpacing={2}>TOI-01 · SUSPECT GO-FAST</text>
-              <text x={CONTACT.x + 40} y={CONTACT.y + 24} fill={colors.threat} stroke="none" fontFamily={fonts.mono} fontSize={19} letterSpacing={2}>NO NAV LTS · 30 KT</text>
+              <text x={CONTACT.x + 44} y={CONTACT.y - 6} fill={colors.threat} stroke={BG} strokeWidth={8} style={{paintOrder: 'stroke'}} fontFamily={fonts.mono} fontSize={40} letterSpacing={1}>TOI-01 · SUSPECT GO-FAST</text>
+              <text x={CONTACT.x + 44} y={CONTACT.y + 40} fill={colors.threat} stroke={BG} strokeWidth={8} style={{paintOrder: 'stroke'}} fontFamily={fonts.mono} fontSize={34} letterSpacing={1}>NO NAV LTS · 30 KT</text>
             </g>
           </g>
         )}
@@ -130,11 +130,11 @@ export const Radar5: React.FC<{start: number}> = ({start}) => {
           <path d="M14 0 L-10 -3 L-12 -14 L-16 -14 L-14 -2 L-18 -1 L-18 1 L-14 2 L-16 14 L-12 14 L-10 3 Z" fill={colors.white} />
         </g>
       </svg>
-      <div style={{position: 'absolute', top: 92, left: 40, fontFamily: fonts.mono, fontSize: 18, color: colors.steel, letterSpacing: '0.12em',
-        border: `1.5px solid ${colors.steel}`, padding: '4px 10px', borderRadius: 3}}>MPA RADAR</div>
+      <div style={{position: 'absolute', top: 84, left: 40, fontFamily: fonts.mono, fontSize: 32, color: colors.steel, letterSpacing: '0.1em',
+        border: `2px solid ${colors.steel}`, padding: '5px 14px', borderRadius: 4}}>MPA RADAR</div>
       {/* the enterprise's own status strip lights in order */}
-      <div style={{position: 'absolute', top: 150, right: 64, display: 'flex', gap: 22, alignItems: 'center', fontFamily: fonts.mono, fontSize: 22, letterSpacing: '0.12em',
-        border: `1.5px solid ${colors.white}`, padding: '8px 18px', borderRadius: 3, background: 'rgba(8,14,22,0.6)', opacity: lit(T.cue - 0.1)}}>
+      <div style={{position: 'absolute', top: 150, right: 64, display: 'flex', gap: 22, alignItems: 'center', fontFamily: fonts.mono, fontSize: 38, letterSpacing: '0.08em',
+        border: `2px solid ${colors.white}`, padding: '10px 22px', borderRadius: 4, background: 'rgba(8,14,22,0.7)', opacity: lit(T.cue - 0.1)}}>
         {([['CUE', T.cue], ['DETECTED', T.detected], ['DESIGNATED', T.designated]] as [string, number][]).map(([w, at], i) => (
           <span key={w} style={{color: i === 2 ? colors.white : colors.marlin, opacity: 0.3 + 0.7 * lit(at), fontWeight: i === 2 ? 500 : 400}}>
             {w} {t >= at ? '✓' : ''}{i < 2 ? <span style={{color: colors.steel, marginLeft: 18}}>·</span> : null}

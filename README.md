@@ -15,7 +15,11 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
-## Animatic v5.0 (Storyboard V7: Intercept. Surveil. Stop.): current
+## Animatic v5.1 (Storyboard V7): current, two options
+
+`review/marlin-animatic-v5.1-A.mp4` (narrator Callum) and `review/marlin-animatic-v5.1-B.mp4` (deeper narrator, Clyde). The picture is identical, with on-screen text about twice the v5.0 size. Compositions: `Marlin` (A) and `MarlinB` (B). See the top of `docs/v5-storyboard-v7.md`.
+
+## Animatic v5.0 (Storyboard V7: Intercept. Surveil. Stop.)
 
 Review file: `review/marlin-animatic-v5.0.mp4` (24 fps, 14 storyboard shots on the beat grid of a 104 BPM score).
 What changed and why (page-6 fixes, the narration note, clearance notes, open questions): `docs/v5-storyboard-v7.md`.

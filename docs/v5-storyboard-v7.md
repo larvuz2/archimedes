@@ -1,4 +1,34 @@
-# Animatic v5.0: Storyboard V7 and the narration note
+# Animatic v5.0 / v5.1: Storyboard V7 and the narration note
+
+## v5.1: two options to present (18 Nov)
+
+Two changes were asked for, so there are two options to present.
+
+1. **Text.** On-screen text on the displays and overlays is about twice as large in both options, so labels like TASKED, TOI-01, LEAD/FLANK, V-NET, PROP FOULED and DIW read at a glance. The cutter and USV labels hide once the Marlins are tasked, so they don't sit behind TASKED.
+2. **Narrator.** The two options differ only in the narrator.
+
+| | Option A: `review/marlin-animatic-v5.1-A.mp4` | Option B: `review/marlin-animatic-v5.1-B.mp4` |
+|---|---|---|
+| Voice | Callum (v5.0's read) | Clyde, directed "very deep booming voice, intense, rising urgency" |
+| Median pitch | 185 Hz | 97 Hz (almost an octave lower) |
+| Head-to-head (B against A, both orders) | | as urgent (+0.5) and as deep/epic (+0.5): a tie; described "deep, commanding, resonant, cinematic, deliberate", naturalness 10/10 |
+| Mix | `public/audio/v5/mix.flac` | `public/audio/v5/mix_deep.flac` |
+
+Why A's read sounds high: the v5.0 take picker counted raised pitch as energy, so it chose the most strained takes (145–225 Hz). The same voice's audition sat at 114 Hz. For B the picker runs with `--deep`: raised pitch counts against a take, and urgency has to come from vocal effort and loudness contrast. Takes also have to fit their beat. Brian was recorded too, but he kept saying "Test" instead of "Tasked".
+
+**Rebuild B**
+
+```bash
+python3 scripts/generate_vo_v5b.py 3 Clyde
+/opt/venv-audio/bin/python scripts/pick_vo_v5.py --deep public/audio/v5/vo_deep/Clyde
+/opt/venv-audio/bin/python scripts/build_audio_v5.py --vo public/audio/v5/vo_deep/Clyde --tag deep
+npx remotion render src/index.ts MarlinB review/marlin-animatic-v5.1-B.mp4 --crf=17
+```
+
+"Intercept." in B is the strongest take, tightened 7% in time (pitch unchanged) to fit its beat.
+
+---
+
 
 **Inputs** (17 Nov):
 

@@ -66,7 +66,7 @@ const onScreen = (p: {x: number; y: number} | null, zoom: number, o: [number, nu
 
 // ---------- overlays ----------
 const mono = (size: number, color: string, extra: React.CSSProperties = {}): React.CSSProperties => ({fontFamily: fonts.mono, fontSize: size, letterSpacing: '0.14em', color, ...extra});
-const boxed = (c: string, extra: React.CSSProperties = {}): React.CSSProperties => ({...mono(22, c), border: `1.5px solid ${c}`, padding: '7px 16px', borderRadius: 3, background: 'rgba(8,14,22,0.62)', ...extra});
+const boxed = (c: string, extra: React.CSSProperties = {}): React.CSSProperties => ({...mono(38, c, {letterSpacing: '0.1em'}), border: `2px solid ${c}`, padding: '9px 20px', borderRadius: 4, background: 'rgba(8,14,22,0.7)', ...extra});
 const Brackets: React.FC<{cx: number; cy: number; w: number; h: number; k: number; color?: string}> = ({cx, cy, w, h, k, color = 'rgba(255,255,255,0.9)'}) => (
   <g stroke={color} strokeWidth={2.6} fill="none" opacity={k}>
     {[[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) => {
@@ -84,7 +84,7 @@ const Super: React.FC<{n: string; word: string; slam?: number}> = ({n, word, sla
     <AbsoluteFill>
       <AbsoluteFill style={{background: 'radial-gradient(ellipse 760px 300px at 330px 900px, rgba(4,8,13,0.62) 0%, rgba(4,8,13,0) 100%)'}} />
       <div style={{position: 'absolute', left: 110, bottom: 118, opacity: k, color: colors.white, textShadow: '0 4px 30px rgba(0,0,0,0.85)',
-        transform: `scale(${(1.18 - 0.18 * k) * (0.42 + 0.58 * big)})`, transformOrigin: '0% 100%'}}>
+        transform: `scale(${(1.18 - 0.18 * k) * (0.55 + 0.45 * big)})`, transformOrigin: '0% 100%'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 20, ...mono(40, colors.marlin, {letterSpacing: '0.2em'})}}>
           <span style={{width: 90 * k, height: 5, background: colors.marlin}} />{n}
         </div>
@@ -134,11 +134,11 @@ const EyesOn: React.FC = () => {
         <div style={{width: 1920, height: 1080, transform: `scale(${W / 1920})`, transformOrigin: '0 0', position: 'relative'}}>
           <Clip src="shot10_ir" z={[1.0, 1.0]} ir />
           <svg width={1920} height={1080} style={{position: 'absolute', inset: 0}}><Brackets cx={ir.x} cy={ir.y} w={1180} h={420} k={irK} /></svg>
-          <div style={{...mono(pull > 0.5 ? 56 : 22, 'rgba(255,255,255,0.9)'), position: 'absolute', top: pull > 0.5 ? 44 : 92, left: pull > 0.5 ? 52 : 40}}>MARLIN IR</div>
-          <div style={{...mono(pull > 0.5 ? 56 : 28, colors.threat), position: 'absolute', top: pull > 0.5 ? 44 : 150, right: pull > 0.5 ? 52 : 64, opacity: irK}}>3 POB · BALES</div>
-          <div style={{...mono(pull > 0.5 ? 56 : 26, 'rgba(255,255,255,0.92)'), position: 'absolute', bottom: pull > 0.5 ? 44 : 90, left: pull > 0.5 ? 52 : 40, display: 'flex', alignItems: 'center',
-            gap: 18, opacity: irK}}>
-            <span style={{width: pull > 0.5 ? 34 : 18, height: pull > 0.5 ? 34 : 18, borderRadius: 20, background: colors.marlin, opacity: 0.45 + 0.55 * Math.round((Math.sin(t * 6) + 1) / 2)}} />LIVE TO C2
+          <div style={{...mono(pull > 0.5 ? 104 : 40, 'rgba(255,255,255,0.92)', {letterSpacing: '0.08em'}), position: 'absolute', top: pull > 0.5 ? 40 : 84, left: pull > 0.5 ? 52 : 40}}>MARLIN IR</div>
+          <div style={{...mono(pull > 0.5 ? 104 : 48, colors.threat, {letterSpacing: '0.08em'}), position: 'absolute', top: pull > 0.5 ? 40 : 150, right: pull > 0.5 ? 52 : 64, opacity: irK}}>3 POB · BALES</div>
+          <div style={{...mono(pull > 0.5 ? 104 : 44, 'rgba(255,255,255,0.95)', {letterSpacing: '0.08em'}), position: 'absolute', bottom: pull > 0.5 ? 40 : 90, ...(pull > 0.5 ? {left: 52} : {right: 64}), display: 'flex', alignItems: 'center',
+            gap: 22, opacity: irK}}>
+            <span style={{width: pull > 0.5 ? 60 : 30, height: pull > 0.5 ? 60 : 30, borderRadius: 30, background: colors.marlin, opacity: 0.45 + 0.55 * Math.round((Math.sin(t * 6) + 1) / 2)}} />LIVE TO C2
           </div>
         </div>
       </div>
@@ -157,10 +157,10 @@ const Pass: React.FC = () => {
   return (
     <AbsoluteFill>
       <Clip src="shotp1" from={FROM} z={z} o={o} />
-      <div style={{...mono(20, colors.steel), position: 'absolute', top: 92, left: 40}}>NOTIONAL STOP PROFILE</div>
-      <div style={{...mono(20, colors.steel), position: 'absolute', top: 92, right: 40}}>OVERHEAD</div>
-      {toi && <div style={{...mono(22, colors.threat), position: 'absolute', left: toi.x - 60, top: toi.y + 44, textShadow: '0 0 8px #000'}}>TOI-01</div>}
-      {m && <div style={{...mono(22, colors.marlin), position: 'absolute', left: m.x - 80, top: m.y - 64, textShadow: '0 0 8px #000'}}>LEAD MARLIN</div>}
+      <div style={{...mono(34, colors.steel, {letterSpacing: '0.1em'}), position: 'absolute', top: 84, left: 40}}>NOTIONAL STOP PROFILE</div>
+      <div style={{...mono(34, colors.steel, {letterSpacing: '0.1em'}), position: 'absolute', top: 150, right: 64}}>OVERHEAD</div>
+      {toi && <div style={{...mono(40, colors.threat, {letterSpacing: '0.08em'}), position: 'absolute', left: toi.x - 85, top: toi.y + 44, textShadow: '0 0 10px #000, 0 0 4px #000'}}>TOI-01</div>}
+      {m && <div style={{...mono(40, colors.marlin, {letterSpacing: '0.08em'}), position: 'absolute', left: m.x - 150, top: m.y - 96, textShadow: '0 0 10px #000, 0 0 4px #000'}}>LEAD MARLIN</div>}
     </AbsoluteFill>
   );
 };
@@ -201,10 +201,10 @@ const NetAway: React.FC = () => {
         {arrows > 0 && eL && curve(eL)}
         {arrows > 0 && eR && curve(eR)}
       </svg>
-      <div style={{...mono(20, colors.steel), position: 'absolute', top: 92, left: 40}}>NOTIONAL STOP PROFILE</div>
-      <div style={{position: 'absolute', top: 150, right: 64, ...boxed(colors.white, {fontSize: 24})}}>C2 · STOP AUTHORIZED · PROFILE: V-NET</div>
-      {toi && <div style={{...mono(22, colors.threat), position: 'absolute', left: toi.x - 90, top: toi.y + 44, textShadow: '0 0 8px #000'}}>TOI-01 · 30 KT</div>}
-      <div style={{...boxed(colors.white, {fontSize: 34, fontWeight: 500, padding: '10px 24px', borderWidth: 2.5}), position: 'absolute', right: 110, bottom: 150, opacity: fired,
+      <div style={{...mono(34, colors.steel, {letterSpacing: '0.1em'}), position: 'absolute', top: 84, left: 40}}>NOTIONAL STOP PROFILE</div>
+      <div style={{position: 'absolute', top: 150, right: 64, ...boxed(colors.white, {fontSize: 40})}}>C2 · STOP AUTHORIZED · PROFILE: V-NET</div>
+      {toi && <div style={{...mono(40, colors.threat, {letterSpacing: '0.08em'}), position: 'absolute', left: toi.x - 170, top: toi.y + 44, textShadow: '0 0 10px #000, 0 0 4px #000'}}>TOI-01 · 30 KT</div>}
+      <div style={{...boxed(colors.white, {fontSize: 64, fontWeight: 500, padding: '12px 30px', borderWidth: 3}), position: 'absolute', right: 110, bottom: 150, opacity: fired,
         transform: `scale(${1.2 - 0.2 * fired})`, transformOrigin: '100% 100%'}}>NET AWAY</div>
     </AbsoluteFill>
   );
@@ -228,12 +228,12 @@ const Fouled: React.FC = () => {
             boxShadow: '0 10px 40px rgba(0,0,0,0.6)', opacity: ik, transform: `scale(${0.94 + 0.06 * ik})`, transformOrigin: '0% 100%'}}>
             <div style={{width: 1920, height: 1080, transform: `scale(${720 / 1920})`, transformOrigin: '0 0', position: 'relative'}}>
               <Clip src="shotu1" from={4} z={[1.05, 1.12]} />
-              <div style={{...mono(54, colors.white), position: 'absolute', top: 40, left: 50, border: '3px solid #fff', padding: '8px 22px', borderRadius: 6, background: 'rgba(8,14,22,0.6)'}}>PROP FOULED</div>
+              <div style={{...mono(104, colors.white, {letterSpacing: '0.08em'}), position: 'absolute', top: 40, left: 50, border: '5px solid #fff', padding: '10px 30px', borderRadius: 8, background: 'rgba(8,14,22,0.7)'}}>PROP FOULED</div>
             </div>
           </div>
         </Sequence>
       )}
-      <div style={{position: 'absolute', top: 150, left: 110, ...boxed(colors.threat, {fontSize: 30, fontWeight: 500, borderWidth: 2.5}), opacity: diw,
+      <div style={{position: 'absolute', top: 150, left: 110, ...boxed(colors.threat, {fontSize: 56, fontWeight: 500, borderWidth: 3}), opacity: diw,
         transform: `scale(${1.25 - 0.25 * diw})`, transformOrigin: '0% 0%'}}>TOI-01 · DIW</div>
     </AbsoluteFill>
   );
@@ -260,7 +260,7 @@ const Hold: React.FC = () => {
           <circle cx={mast.x} cy={mast.y} r={7} fill="none" stroke={colors.marlin} strokeWidth={2} opacity={los} />
         </svg>
       )}
-      {pt && <div style={{...mono(20, colors.white), position: 'absolute', left: pt.x - 52, top: pt.y - 58, textShadow: '0 0 8px #000', opacity: out3(ramp(t, 0.5, 0.9))}}>PARTNER</div>}
+      {pt && <div style={{...mono(38, colors.white, {letterSpacing: '0.08em'}), position: 'absolute', left: pt.x - 90, top: pt.y - 84, textShadow: '0 0 10px #000, 0 0 4px #000', opacity: out3(ramp(t, 0.5, 0.9))}}>PARTNER</div>}
       <div style={{position: 'absolute', top: 150, left: 110, display: 'flex', gap: 14}}>
         <div style={boxed(colors.white, {opacity: out3(ramp(t, 0.15, 0.4))})}>PARTNER EN ROUTE</div>
         <div style={boxed(colors.threat)}>DIW</div>
@@ -301,17 +301,17 @@ const EndCard: React.FC = () => {
       <Img src={staticFile('assets/logo/archimedes-white-temp.png')} style={{width: 400, opacity: land(T.logo)}} />
       <div style={{fontFamily: fonts.display, fontWeight: 700, fontSize: 150, letterSpacing: '0.3em', paddingLeft: '0.3em', marginTop: 34, opacity: land(T.logo, 0.12),
         transform: `scale(${1.1 - 0.1 * land(T.logo)})`}}>MARLIN</div>
-      <div style={{...mono(40, colors.white, {letterSpacing: '0.14em'}), marginTop: 10, opacity: land(tag)}}>Intercept. Surveil. Stop.</div>
+      <div style={{...mono(56, colors.white, {letterSpacing: '0.12em'}), marginTop: 10, opacity: land(tag)}}>Intercept. Surveil. Stop.</div>
       <div style={{width: 140 * land(tag + 0.3), height: 4, background: colors.threat, margin: '38px 0'}} />
-      <div style={{...mono(26, colors.steel, {letterSpacing: '0.12em'}), opacity: land(tag + 0.3)}}>{CONTACT_V5}</div>
-      <div style={{position: 'absolute', bottom: 50, ...mono(16, colors.steel, {letterSpacing: '0.04em'}), maxWidth: 1560, textAlign: 'center', opacity: 0.9 * land(T.logo + 0.2)}}>{DISCLAIMER_V5}</div>
+      <div style={{...mono(40, colors.steel, {letterSpacing: '0.1em'}), opacity: land(tag + 0.3)}}>{CONTACT_V5}</div>
+      <div style={{position: 'absolute', bottom: 40, ...mono(24, colors.steel, {letterSpacing: '0.02em'}), maxWidth: 1480, textAlign: 'center', lineHeight: 1.35, opacity: 0.9 * land(T.logo + 0.2)}}>{DISCLAIMER_V5}</div>
       <AbsoluteFill style={{background: '#000', opacity: clamp((frame - (durationInFrames - 12)) / 11)}} />
     </AbsoluteFill>
   );
 };
 
 // ---------- review slate ----------
-const Slate: React.FC = () => {
+const Slate: React.FC<{version: string}> = ({version}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const shot = SHOTS.find((s) => frame >= fk(s.k0) && frame < fk(s.k1)) ?? SHOTS[SHOTS.length - 1];
@@ -323,7 +323,7 @@ const Slate: React.FC = () => {
     <AbsoluteFill style={{pointerEvents: 'none'}}>
       <div style={{position: 'absolute', top: 28, right: 32, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8}}>
         <div style={{...chip, display: 'flex', alignItems: 'center', gap: 10, fontSize: 20, fontWeight: 500}}>
-          <span style={{width: 10, height: 10, borderRadius: 5, background: colors.threat, display: 'inline-block'}} />{VERSION}
+          <span style={{width: 10, height: 10, borderRadius: 5, background: colors.threat, display: 'inline-block'}} />{version}
         </div>
         <div style={{...chip, fontSize: 15, padding: '6px 12px'}}>SHOT {shot.n} · {shot.name.toUpperCase()}</div>
       </div>
@@ -382,7 +382,8 @@ const useHit = () => {
   return {flash, dx, dy};
 };
 
-export const MarlinV5: React.FC<{slate?: boolean}> = ({slate = true}) => {
+// Two options of v5.1 share the picture and differ only in the narrator: A (Callum, v5.0's read) and B (a deeper, epic voice).
+export const MarlinV5: React.FC<{slate?: boolean; audio?: string; version?: string}> = ({slate = true, audio = 'audio/v5/mix.flac', version = VERSION}) => {
   const {durationInFrames} = useVideoConfig();
   const {flash, dx, dy} = useHit();
   const seq = ([k0, k1, el, name]: Cut, i: number, pre = '') => (
@@ -396,8 +397,8 @@ export const MarlinV5: React.FC<{slate?: boolean}> = ({slate = true}) => {
       </AbsoluteFill>
       <AbsoluteFill style={{background: '#fff', opacity: flash}} />
       {/* sound: score, designed effects and narrator on the same beat grid, mixed and mastered by scripts/build_audio_v5.py */}
-      <Audio src={staticFile('audio/v5/mix.flac')} />
-      {slate && <Slate />}
+      <Audio src={staticFile(audio)} />
+      {slate && <Slate version={version} />}
     </AbsoluteFill>
   );
 };

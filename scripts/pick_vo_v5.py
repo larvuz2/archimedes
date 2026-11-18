@@ -7,6 +7,9 @@
 Writes public/audio/v5/vo/<line>.wav and public/audio/v5/vo/picks.json.
 
   /opt/venv-audio/bin/python scripts/pick_vo_v5.py
+  /opt/venv-audio/bin/python scripts/pick_vo_v5.py --deep public/audio/v5/vo_deep/Brian     # option B: deep register
+With --deep, a raised, strained pitch counts against a take instead of for it: urgency has to come from vocal effort and
+loudness contrast, and the voice has to stay low.
 """
 import json, os, re, shutil, sys, pathlib
 from concurrent.futures import ThreadPoolExecutor
@@ -20,6 +23,7 @@ VO = ROOT / 'public/audio/v5/vo'
 LINES = {'l1a': 'tasked', 'l1b': 'the nearest two close', 'l1ab': 'tasked the nearest two close', 'l1c': 'fifty miles in thirty minutes',
          'l2': 'put eyes on', 'l3': 'and stop it dead in the water', 'l4': 'until partners arrive', 'l5a': 'intercept', 'l5b': 'surveil',
          'l5c': 'stop', 'l6': 'marlin'}
+FITS = {'l1ab': 3.35, 'l5a': 1.22, 'l5b': 1.22, 'l5c': 1.3}  # seconds available on the beat grid (one word every two beats)
 NUM = {'50': 'fifty', '30': 'thirty', '2': 'two', 'too': 'two', 'to': 'two'}
 ISSUES = ("This is one line of a voice-over for a product film. Listen for problems only. Answer on separate lines: WORDS: exactly what is said / "
           "GLITCH: yes/no (clicks, warble, robotic or synthetic artefacts, cut-off syllables) / SHOUTING: yes/no (yelling or screaming, not just "
@@ -44,6 +48,10 @@ def check(p):
 
 
 if __name__ == '__main__':
+    DEEP = '--deep' in sys.argv
+    args = [a for a in sys.argv[1:] if a != '--deep']
+    if args:
+        VO = pathlib.Path(args[0]).resolve()
     takes = sorted((VO / 'takes').glob('l*_*.wav'))
     words = transcribe([str(p) for p in takes])
     with ThreadPoolExecutor(6) as ex:
@@ -58,10 +66,12 @@ if __name__ == '__main__':
     for line in sorted({r['line'] for r in rows}):
         rs = [r for r in rows if r['line'] == line]
         z = lambda k: (np.array([r[k] for r in rs]) - np.mean([r[k] for r in rs])) / (np.std([r[k] for r in rs]) + 1e-9)
-        energy = z('effort_hz') + 0.6 * z('pitch_spread_st') + 0.6 * z('loud_dyn_db') + 0.8 * z('f0_med')
+        energy = (z('effort_hz') + 0.6 * z('pitch_spread_st') + 0.8 * z('loud_dyn_db') - 1.2 * z('f0_med')) if DEEP else \
+            (z('effort_hz') + 0.6 * z('pitch_spread_st') + 0.6 * z('loud_dyn_db') + 0.8 * z('f0_med'))
         for r, e in zip(rs, energy):
             r['energy'] = round(float(e), 2)
-            r['eligible'] = r['ok_words'] and r['glitch'] is not True and r['shouting'] is not True and (r['clear'] or 10) >= 7
+            r['eligible'] = (r['ok_words'] and r['glitch'] is not True and r['shouting'] is not True and (r['clear'] or 10) >= 7
+                             and r['dur'] <= FITS.get(line, 99.0))
         good = [r for r in rs if r['eligible']] or [r for r in rs if r['ok_words']] or rs
         best = max(good, key=lambda r: r['energy'])
         picks[line] = best['take']

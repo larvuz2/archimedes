@@ -13,3 +13,4 @@ __pycache__/
 public/audio/v5/*.wav
 public/audio/v5/candidates/
 public/audio/v5/vo/takes/
+public/audio/v5/vo_deep/*/takes/

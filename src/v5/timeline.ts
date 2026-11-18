@@ -1,6 +1,6 @@
 // Animatic v5.0: Storyboard V7 ("Intercept. Surveil. Stop."), 14 shots, cut on the beat grid of the score.
 // The score runs at exactly 104 BPM with its first beat at 0.055 s: t(k) = T0 + k * BEAT. scripts/build_audio_v5.py uses the same grid.
-export const VERSION = 'ANIMATIC v5.0';
+export const VERSION = 'ANIMATIC v5.1';
 export const V5 = {width: 1920, height: 1080, fps: 24};
 export const BEAT = 60 / 104;
 export const T0 = 0.055;
