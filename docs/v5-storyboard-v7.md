@@ -1,5 +1,44 @@
 # Animatic v5.0 / v5.1: Storyboard V7 and the narration note
 
+## v5.2: sound pass on option B (18 Nov)
+
+Client notes on v5.1 B:
+- "the audio shuts down weirdly" at 0:13–0:14, 0:33 and 0:56
+- "never let the audio go blank"
+- more radar scanning sound
+- keep the tension at all times
+
+`review/marlin-animatic-v5.2-B.mp4`. The picture is unchanged; only option B was rebuilt. Option A stays as delivered and can be rebuilt with `--v51`.
+
+What was going wrong: there was no digital silence. The score itself switched off. It was tape-stopped to nothing at 0:13, its low end was stripped at 0:31–0:34, it stopped at 0:43 and it was hard-cut at 0:56. That left bare effects.
+
+What changed (`scripts/build_audio_v5.py`, `build_music` / `build_sfx`):
+
+- **Score: never off.**
+  - 0:09–0:18: it sinks (darker, lower) but keeps pulsing, then opens back up into the kick on the lift.
+  - 0:43: it still dies with the engines (tape stop), then creeps back in, muffled, within a second.
+  - 0:56: no hard cut. It darkens and recedes under the end card.
+- **Tension bed.**
+  - A dark drone in the score's key (C#) runs under the whole film and rises wherever the score dips.
+  - A ticking clock (accelerating into the lift and into the finale) and a heartbeat run in the quiet stretches.
+  - The held tone in shot 04 was retuned from D to C# so it no longer clashes.
+- **Radar (0:04–0:09).**
+  - Beam sweeps that pan with the beam, and a rotating sweep tone.
+  - A crisp ping plus a deep echoing ping each time the contact paints, getting stronger pass after pass.
+  - Console hum and data chatter, a lock-on on the hook, and confirm tones for DETECTED and DESIGNATED.
+  - A sucked-out transition from the boat into the aircraft.
+- **0:31–0:34, the build into STOP.** A snare roll accelerating from quarters to thirty-seconds, a dark riser (kept below 2.5 kHz), a rising sub and a reverse swell. The score is pushed up, not thinned.
+- **0:56, the end card.** The last word's hit rings into a logo hit (impact, sub and a dark braam layer) with a long tail. Then the name, a low spool-up and a final sub, and the film decays into black over the last second.
+- **Every cut** has a transition (whoosh, swell or hit).
+
+Checks:
+- **Loudness.** The quietest moment between 0:00.5 and 0:59.5 is -21 LUFS momentary, except the final fade (before the pass: -28 at 0:14 and -30 at 0:58.5). Integrated -14.0 LUFS, true peak -2.2 dBFS.
+- **Listening model, full film.** No moment that goes blank or switches off. Tension 9, momentum 9, power 9, narrator depth and urgency 9. Radar "classic radar sweep and electronic pings", clarity 8/10.
+- **Voice-artifact classifier.** The mix is clean (worst 0.03).
+- **The "roar" at 0:09.5.** The listening model calls the score's own braam hit there a "monstrous roar". The classifier hears it as music or explosion, not a voice, and it is the same hit as in the approved versions.
+
+---
+
 ## v5.1: two options to present (18 Nov)
 
 Two changes were asked for, so there are two options to present.

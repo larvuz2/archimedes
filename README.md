@@ -15,7 +15,12 @@ npm run render:draft  # half-res 60s draft -> out/marlin-draft.mp4
 npm run render        # full 1920x1080 30fps -> out/marlin.mp4
 ```
 
-## Animatic v5.1 (Storyboard V7): current, two options
+## Animatic v5.2 B (Storyboard V7): current
+
+`review/marlin-animatic-v5.2-B.mp4`: option B (deep narrator) with a full sound pass in which the audio never drops out. Composition `MarlinB`, mix `public/audio/v5/mix_deep.flac`
+(`/opt/venv-audio/bin/python scripts/build_audio_v5.py --vo public/audio/v5/vo_deep/Clyde --tag deep`). See the top of `docs/v5-storyboard-v7.md`.
+
+## Animatic v5.1 (Storyboard V7): two options
 
 `review/marlin-animatic-v5.1-A.mp4` (narrator Callum) and `review/marlin-animatic-v5.1-B.mp4` (deeper narrator, Clyde). The picture is identical, with on-screen text about twice the v5.0 size. Compositions: `Marlin` (A) and `MarlinB` (B). See the top of `docs/v5-storyboard-v7.md`.
 

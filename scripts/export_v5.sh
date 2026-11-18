@@ -19,6 +19,7 @@ ffmpeg -v error -y -i public/audio/v5/mix.flac -c:a pcm_s16le "$AUD/marlin-v5.0_
 ls -la "$REF" "$AUD"
 # v5.1 option B (deep narrator): its narration stem and final mix
 if [ -f public/audio/v5/mix_deep.flac ]; then
-  ffmpeg -v error -y -i public/audio/v5/vo_deep.wav -af "volume=-8.3dB" -c:a flac -sample_fmt s16 "$AUD/marlin-v5.1-B_stem_vo.flac"
-  ffmpeg -v error -y -i public/audio/v5/mix_deep.flac -c:a pcm_s16le "$AUD/marlin-v5.1-B_mix.wav"
+  ffmpeg -v error -y -i public/audio/v5/vo_deep.wav -af "volume=-8.3dB" -c:a flac -sample_fmt s16 "$AUD/marlin-v5.2-B_stem_vo.flac"
+  ffmpeg -v error -y -i public/audio/v5/mix_deep.flac -c:a pcm_s16le "$AUD/marlin-v5.2-B_mix.wav"
+  for n in music sfx; do ffmpeg -v error -y -i "public/audio/v5/${n}_deep.wav" -af "volume=-8.3dB" -c:a flac -sample_fmt s16 "$AUD/marlin-v5.2-B_stem_$n.flac"; done
 fi
